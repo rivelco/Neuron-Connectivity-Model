@@ -2,6 +2,7 @@ import math
 import numpy as np
 import csv
 import matplotlib.pyplot as plt
+import numpy as np
 
 import getData
 import connectionMatrix
@@ -14,8 +15,8 @@ def main():
     slice = '1D'
     anathomicSc = 'all'
     # Location of file to analyze
-    fileLocation = 'Datos para el modelo/Datos para procesar/' + animal + '/' + slice + '.csv'
-    #fileLocation = 'Datos para el modelo/Test/1D.csv'
+    fileLocation = 'Data/For processing/' + animal + '/' + slice + '.csv'
+    #fileLocation = 'Data/Test/1D.csv'
 
     criteria = 2
     # Criterion used for connections
@@ -28,9 +29,9 @@ def main():
 
     # Probability table, for table[a][b] says the probability of connection between node 'a' and 'b'
     # Receives two parameters, a dict with cells properties, and a number indicating the criteria
-
-    matrixAlt = connectionMatrix.probabilityMatrix2Rad(cells, criteria)
     matrix = connectionMatrix.probabilityMatrix(cells, criteria, 125)
+    matrixAlt = connectionMatrix.probabilityMatrix2Rad(cells, criteria)
+
 
     fig, ax = plt.subplots()
 
@@ -41,12 +42,16 @@ def main():
     # Puts on plt cache the plot for each edge given a table and certain criterion
     # Receives three parameters, the adjacency matrix, the cells dict for coords, and a 0.0-1 criterion
     networkPlots.drawNodes(cells, ax)
-    networkPlots.drawEdges(matrix, cells, criterion, ax)
+
+
+    binMatrix = connectionMatrix.binaryMatrix(matrix, criterion)
+    print(binMatrix)
+    #networkPlots.drawEdges(binMatrix, cells, ax)
 
     # Get total number of connected components. Disc: One connected component has more than one node
     # Returns two objects, a list with the realation of each node and the CC it gelongs to, and the total number
     # Receives two parameters, an adjacency matrix and a criterion for each union
-    ccomponents, nodesICC = connectedComponents.connectedComponents(matrix, criterion)
+    ccomponents, nodesICC = connectedComponents.connectedComponents(binMatrix)
     print("Total number of components: {}".format(len(ccomponents)-1))
 
     averageNodesPCC = connectedComponents.avgNodesPCC(ccomponents)
@@ -55,9 +60,12 @@ def main():
     print('Isolated nodes: {}'.format(len(ccomponents['0'])))
     print('Ratio of isolated nodes: {}%'.format(len(ccomponents['0'])/len(cells)*100))
 
+    sComp = len(ccomponents)
+    networkPlots.drawConnectedComponents(sComp, binMatrix, cells, ax)
+
     networkPlots.markThisCells(ccomponents['0'], cells, '#000000', ax)
 
-    averageEdgesPN = connectedComponents.avgEdgesPN(matrix, criterion)
+    averageEdgesPN = connectedComponents.avgEdgesPN(binMatrix)
     print('Average number of edges per node: {}'.format(averageEdgesPN))
     #networkPlots.drawConnectedComponents(nodesICC, cells)
 
@@ -75,6 +83,8 @@ def main():
     plt.xlim(-500, 5000)
     plt.ylim(-500, 6500)
     plt.show()
+    exit()
+
 
 if __name__ == "__main__":
     main()

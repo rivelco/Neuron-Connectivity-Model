@@ -1,8 +1,10 @@
+import math
+
 # This funtion find the connected components from a given probability matrix and criterion
 # Returns a dict of lists where each list holds the nodes it contains, also a relation of nodes and components
-def connectedComponents(matrix, criterion):
+def connectedComponents(matrix):
     nodes = []                 # List that indicates the [i] node belongs to the nodes[i] coponent
-    size = len(matrix[0])           # Total amount of nodes in matrix, given that is squared
+    size = int(math.sqrt(matrix.size))       # Total amount of nodes in matrix, given that is squared
     for i in range(size):           # Initialize the components list
         nodes.append(-1)                # with -1
 
@@ -26,7 +28,7 @@ def connectedComponents(matrix, criterion):
                     components[key].append(current)     # add the current node to the list it belongs to
                     for comparedNode in range(1, size): # Iterates over all the nodes that are connected to current
                         # If that connection is valid given a criterion and we have not visited that node before
-                        if matrix[current][comparedNode] >= criterion and nodes[comparedNode] == -1:
+                        if matrix[current][comparedNode] == 1 and nodes[comparedNode] == -1:
                             flag = True # Flag true when a new connection for 'current' is found
                             queue.append(comparedNode)  # we add that node to the queue
             if not flag:  # False when no connections has been found, it means a connected component of 1 node
@@ -55,18 +57,18 @@ def avgNodesPCC(components):
     avg = avg / (len(components)-1)     # Calculate the average
     return avg                          # Returns that number
 
-def edgesPerNode(matrix, criterion):
+def edgesPerNode(matrix):
     edgesPN = []
     for i in range(len(matrix[0])):
         edgesPN.append(0)
         for j in range(len(matrix[0])):
             if not i == j:
-                if matrix[i][j] >= criterion:
+                if matrix[i][j] == 1:
                     edgesPN[i] += 1
     return edgesPN
 
-def avgEdgesPN(matrix, criterion):
-    edgesPN = edgesPerNode(matrix, criterion)
+def avgEdgesPN(matrix):
+    edgesPN = edgesPerNode(matrix)
     avg = 0
     for edge in edgesPN:
         avg += edge

@@ -1,18 +1,20 @@
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.collections import PatchCollection
+import math
+import random
+import numpy as np
 
 # This function puts on plt cache each valid edge on a given probability matrix
-def drawEdges(matrix, cells, criterion, ax):
-    for i in range(len(matrix[0])):                 # Iterates over each node
-        for j in range(len(matrix[0])):                 # Iterates again for each comparable node
-            if not i == j:                                  # Only iterate over one side of the symmetric matrix
-                if matrix[i][j] >= criterion:                   # If that probability is valid given the criterion
-                    xValues = [cells[str(i)].x, cells[str(j)].x]    # Extract the 'y' coordinates of every cell
-                    yValues = [cells[str(i)].y, cells[str(j)].y]    # And the 'x' coordinates too
-                    ax.plot(xValues, yValues, zorder=2)                      # Plot that edge
-            else:
-                break                                       # Breaks when iterating on the other side
+def drawEdges(matrix, cells, ax):
+    size = int(math.sqrt(matrix.size))
+    for i in range(size):                 # Iterates over each node
+        for j in range(i, size):                 # Iterates again for each comparable node
+            # Only iterate over one side of the symmetric matrix
+            if matrix[i][j] == 1 and not i == j:      # If that probability is valid given the criterion
+                xValues = [cells[i].x, cells[j].x]      # Extract the 'y' coordinates of every cell
+                yValues = [cells[i].y, cells[j].y]      # And the 'x' coordinates too
+                ax.plot(xValues, yValues, zorder=2, color='#FFFF00')     # Plot that edge
 
 def drawNodes(cells, ax):
     listXM = []      # List for 'x' coordinates
@@ -21,7 +23,9 @@ def drawNodes(cells, ax):
     listYV = []      # List for 'y' coordinates
     listXL = []      # List for 'x' coordinates
     listYL = []      # List for 'y' coordinates
-    for key, cell in cells.items():     # Iterate over the dict items
+    for cell in cells:     # Iterate over the dict items
+        if cell.name == 0:
+            continue
         if cell.slice == 1:                 # Identify the dorsal medial section
             listXM.append(cell.x)                # Adds each coordinate to respective list
             listYM.append(cell.y)
@@ -42,64 +46,59 @@ def markThisCells(toDraw, cells, color, ax):
     listX = []
     listY = []
     for cell in toDraw:
-        temp = cells[str(cell)]
+        temp = cells[cell]
         listX.append(temp.x)
         listY.append(temp.y)
     if len(listX) > 0:
         ax.scatter(listX, listY, marker='o', c=color, alpha=1, edgecolor='none', zorder=5, label='Isolated cell')
 
+def drawConnectedComponents(n, matrix, cells, ax):
+    size = int(math.sqrt(matrix.size))
+    colors = []
+    visited = np.zeros(size)
+    queue = []
+
+    for i in range(size):
+        colors.append('#%06X' % random.randint(0, 0xFFFFFF))
+    cit = 0
+    # TODO: cit is counting for every node, must be only for ccs
+    for i in range(1, size):
+        queue.append(i)
+        while len(queue) > 0:
+            now = queue.pop(0)
+            if visited[now] == 0:
+                visited[now] = 1
+                for j in range(1, size):
+                    if matrix[now][j] == 1 and visited[j] == 0:
+                        queue.append(j)
+                        xValues = [cells[now].x, cells[j].x]      # Extract the 'y' coordinates of every cell
+                        yValues = [cells[now].y, cells[j].y]      # And the 'x' coordinates too
+                        ax.plot(xValues, yValues, zorder=2, color=colors[cit])     # Plot that edge
+                #print(queue)
+        cit += 1
+
+
 # This function puts on plt cache the dendritic fields of a given dict of cells
 # it diferentiates with color for each section or 'Slice'
 def drawDendriticFields(cells, ax, radConst):
-    listX = []      # List for 'x' coordinates
-    listY = []      # List for 'y' coordinates
     colors = []     # List for the color of each node
     patches = []
-    color = ''
 
-    for key, cell in cells.items():     # Iterate over the dict items
+    for cell in cells:     # Iterate over the dict items
+        if cell.name == 0:                  # Skip the foo cell
+            continue
         if cell.slice == 1:                 # Identify the dorsal medial section
             colors.append('#FF0000')            # with red color
-            color = '#FF0000'
         elif cell.slice == 2:               # Identify the ventral region
             colors.append('#00FF00')            # with green color
-            color = '#00FF00'
         elif cell.slice == 3:               # Identify the dorsal lateral section
             colors.append('#0000FF')            # with blue color
-            color = '#0000FF'
-        axes = (cell.x, cell.y)
-        rad = 125
-        if not radConst:
-            rad = cell.radius
-        circle = mpl.patches.Circle(axes, radius=rad, color=color)
-        patches.append(circle)
-        listX.append(cell.x)                # Adds each coordinate to respective list
-        listY.append(cell.y)
+        axes = (cell.x, cell.y)             # Get tuple of axes
+        rad = 125                           # Set default radius
+        if not radConst:                    # If we don't want constant radius
+            rad = cell.radius                   # Get the random radius from the model
+        circle = mpl.patches.Circle(axes, radius=rad)   # Create a new circle form with given attributes
+        patches.append(circle)              # Add that circle to the patches list
 
-    p = PatchCollection(patches, alpha=0.5, color=colors, edgecolor='none', zorder=1)
-    ax.add_collection(p)
-    # .- area = 350     # Set the size of the dendritic field, just for graphical purposes
-    #plt.scatter(listX, listY, s=area, c=colors, alpha=0.5, edgecolor='none')  # Plots those coordinates
-    # .- plt.xlabel("Coords X")  # Label for x
-    # .- plt.ylabel("Coords Y")  # Label for y
-    return p
-
-def drawConnectedComponents(components, cells):
-    cc = {}
-    for i in range(1, len(components)):
-        key = str(components[i])
-        if not key in cc:
-            cc[key] = []
-        cc[key].append(i)
-
-    listX = []
-    listY = []
-    for ccn, items in cc.items():
-        if not str(ccn) == '0':
-            for item in items:
-                listX.append(cells[str(item)].x)
-                listY.append(cells[str(item)].y)
-            plt.plot(listX, listY)
-            listX.clear()
-            listY.clear()
-    print(cc)
+    p = PatchCollection(patches, alpha=0.5, color=colors, edgecolor='none', zorder=1) # Create collection
+    ax.add_collection(p)    # Add that collection to the given axes
