@@ -103,5 +103,5 @@ def drawDendriticFields(cells, ax, radConst):
         circle = mpl.patches.Circle(axes, radius=rad)   # Create a new circle form with given attributes
         patches.append(circle)              # Add that circle to the patches list
 
-    p = PatchCollection(patches, alpha=0.5, color=colors, edgecolor='none', zorder=1) # Create collection
+    p = PatchCollection(patches, alpha=0.3, color=colors, edgecolor='none', zorder=1) # Create collection
     ax.add_collection(p)    # Add that collection to the given axes
