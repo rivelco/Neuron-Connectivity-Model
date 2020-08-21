@@ -52,27 +52,30 @@ def markThisCells(toDraw, cells, color, ax):
     if len(listX) > 0:
         ax.scatter(listX, listY, marker='o', c=color, alpha=1, edgecolor='none', zorder=5, label='Isolated cell')
 
-def drawConnectedComponents(n, matrix, cells, ax):
+def drawConnectedComponents(ccomponents, matrix, cells, ax):
     size = int(math.sqrt(matrix.size))
     colors = []
     visited = np.zeros(size)
     queue = []
 
-    for i in range(size):
+    sComp = len(ccomponents)
+    for i in range(sComp):
         colors.append('#%06X' % random.randint(0, 0xFFFFFF))
     cit = 0
-    # TODO: cit is counting for every node, must be only for ccs
-    for i in range(1, size):
-        queue.append(i)
+
+    for i in range(1, sComp):
+        queue.append(ccomponents[i][0])
         while len(queue) > 0:
             now = queue.pop(0)
             if visited[now] == 0:
                 visited[now] = 1
-                for j in range(1, size):
-                    if matrix[now][j] == 1 and visited[j] == 0:
-                        queue.append(j)
-                        xValues = [cells[now].x, cells[j].x]      # Extract the 'y' coordinates of every cell
-                        yValues = [cells[now].y, cells[j].y]      # And the 'x' coordinates too
+                currentCompSize = len(ccomponents[i])
+                for j in range(0, currentCompSize):
+                    node = ccomponents[i][j]
+                    if matrix[now][node] == 1 and visited[node] == 0:
+                        queue.append(node)
+                        xValues = [cells[now].x, cells[node].x]      # Extract the 'y' coordinates of every cell
+                        yValues = [cells[now].y, cells[node].y]      # And the 'x' coordinates too
                         ax.plot(xValues, yValues, zorder=2, color=colors[cit])     # Plot that edge
                 #print(queue)
         cit += 1

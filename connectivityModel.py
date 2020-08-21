@@ -11,7 +11,7 @@ import connectedComponents
 import probabilityFunctions as pf
 
 def main():
-    animal = 'Control 6 L1'
+    animal = 'AVP 3 L1'
     slice = '1D'
     anathomicSc = 'all'
     # Location of file to analyze
@@ -37,7 +37,7 @@ def main():
 
     # Puts on plt cache the plot for the dendritic fields of each cell
     # Receives one parameter, the dict with cells info
-    networkPlots.drawDendriticFields(cells, ax, True)
+    #networkPlots.drawDendriticFields(cells, ax, True)
 
     # Puts on plt cache the plot for each edge given a table and certain criterion
     # Receives three parameters, the adjacency matrix, the cells dict for coords, and a 0.0-1 criterion
@@ -57,13 +57,19 @@ def main():
     averageNodesPCC = connectedComponents.avgNodesPCC(ccomponents)
     print('Average number of nodes per cc: {}'.format(averageNodesPCC))
 
-    print('Isolated nodes: {}'.format(len(ccomponents['0'])))
-    print('Ratio of isolated nodes: {}%'.format(len(ccomponents['0'])/len(cells)*100))
+    print('Isolated nodes: {}'.format(len(ccomponents[0])))
+    print('Ratio of isolated nodes: {}%'.format(len(ccomponents[0])/len(cells)*100))
 
-    sComp = len(ccomponents)
-    networkPlots.drawConnectedComponents(sComp, binMatrix, cells, ax)
+    edgesPN = connectedComponents.edgesPerNode(binMatrix)
+    edgVals, edgCounts = np.unique(edgesPN, return_counts=True)
+    edgHist = dict(zip(edgVals, edgCounts))
 
-    networkPlots.markThisCells(ccomponents['0'], cells, '#000000', ax)
+    #fig2, ax2 = plt.subplots()
+    #ax2.hist(edgesPN)
+
+    networkPlots.drawConnectedComponents(ccomponents, binMatrix, cells, ax)
+
+    networkPlots.markThisCells(ccomponents[0], cells, '#000000', ax)
 
     averageEdgesPN = connectedComponents.avgEdgesPN(binMatrix)
     print('Average number of edges per node: {}'.format(averageEdgesPN))

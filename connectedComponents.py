@@ -1,25 +1,24 @@
 import math
+import numpy as np
 
 # This funtion find the connected components from a given probability matrix and criterion
 # Returns a dict of lists where each list holds the nodes it contains, also a relation of nodes and components
 def connectedComponents(matrix):
-    nodes = []                 # List that indicates the [i] node belongs to the nodes[i] coponent
     size = int(math.sqrt(matrix.size))       # Total amount of nodes in matrix, given that is squared
-    for i in range(size):           # Initialize the components list
-        nodes.append(-1)                # with -1
+    nodes = np.full(size, -1)                      # List that indicates the [i] node belongs to the nodes[i] coponent
 
     queue = []                      # Queue for the nodes to process on the BFS
     compCounter = 0                 # Counter for the total connectet components
     components = {}                 # Dict of lists, the 'key' holds the list of nodes of that 'key'. key is always a number
-    components['0'] = []            # This component holds the isolated nodes, nodes of component '0'
+    components[0] = []            # This component holds the isolated nodes, nodes of component '0'
 
     for node in range(1, size):       # For each node on the matrix
         if nodes[node] == -1:           # If we have not visited the node previously
             queue.append(node)              # insert that new node on the queue
             compCounter += 1                # increase the components counter by one
             flag = False                    # Flag to check if the next node has more connections
-            key = str(compCounter)          # Make a key with cu  rrent component number
-            while len(queue) > 0:           # while exists more connected node
+            key = compCounter               # Make a key with current component number
+            while len(queue) > 0:           # while exists more connected nodes
                 current = queue.pop(0)          # Take one node to work with
                 if nodes[current] == -1:        # We only process the node if it has not been analyzed before
                     nodes[current] = compCounter    # marks the connected component that node belongs to
@@ -34,7 +33,7 @@ def connectedComponents(matrix):
             if not flag:  # False when no connections has been found, it means a connected component of 1 node
                 compCounter -= 1        # Take one out from the counter because we're correcting here
                 del components[key]     # Delete the entry from the dict
-                components['0'].append(current) # Add that isolated node to the corresponding key
+                components[0].append(current) # Add that isolated node to the corresponding key
                 nodes[current] = 0      # Mark this cell as "alone" on the list
     # Return the dict of lists of connected components the relation of nodes and the component they belong to
     return components, nodes
@@ -42,9 +41,10 @@ def connectedComponents(matrix):
 # Function that receives a dict of lists of connected components
 # Returns a list of the amount of nodes of every connected component
 def nodesPerCC(components):
-    nodespcc = []                                   # New list that holds the number of nodes per cc
-    for i in range(len(components)):                # Iterates over all the components on the dict
-        nodespcc.append(len(components[str(i)]))        # Add each number of elements per cc
+    size = len(components)
+    nodespcc = np.empty(size)                                   # New list that holds the number of nodes per cc
+    for i in range(size):                # Iterates over all the components on the dict
+        nodespcc[i] = len(components[i])      # Add each number of elements per cc
     return nodespcc                                 # Returns the list of number of nodes per cc
 
 # Returns the average number of nodes per cc given a dict of components
@@ -58,10 +58,10 @@ def avgNodesPCC(components):
     return avg                          # Returns that number
 
 def edgesPerNode(matrix):
-    edgesPN = []
-    for i in range(len(matrix[0])):
-        edgesPN.append(0)
-        for j in range(len(matrix[0])):
+    size = int(math.sqrt(matrix.size))
+    edgesPN = np.zeros(size)
+    for i in range(size):
+        for j in range(size):
             if not i == j:
                 if matrix[i][j] == 1:
                     edgesPN[i] += 1
