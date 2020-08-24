@@ -9,6 +9,7 @@ import connectionMatrix
 import networkPlots
 import connectedComponents
 import probabilityFunctions as pf
+import paths
 
 def main():
     animal = 'Control 6 L1'                 # Animal
@@ -113,6 +114,23 @@ def main():
     # Creates the graph of each node degree
     ax2[0].hist(edgesPN, bins = int(np.amax(edgesPN)))
     ax2[1].hist(nodesPCC_WOZ, bins = len(nodesPCC_WOZ))
+
+    mat0 = [[1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 0],
+            [1, 1, 1, 0, 1],
+            [1, 1, 0, 1, 0],
+            [1, 0, 1, 0, 1]]
+    mat1 = np.array(mat0)
+    counts = np.zeros(5)
+    for i in range(0, 5):
+        dis, prev = paths.shortestPath(mat1, i)
+        for j in range(0, 5):
+            rec = paths.reconstructPath(prev, i, j)
+            for node in range(1, len(rec)-1):
+                counts[node] += 1
+
+    print('Los conteos son: ')
+    print(counts)
 
 
     figFolder = 'Figures/Saved/'
