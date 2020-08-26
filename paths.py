@@ -39,72 +39,41 @@ def reconstructPath(path, origin, target):
     rec.reverse()                       # Invert the list in order to give the correct sequence from origin to target
     return rec                          # return the result
 
-def brandeAlgorithm(matrix):
+# Implementation of Brande's algorithm for betweenes centrality
+# Check https://ucilnica.fri.uni-lj.si/pluginfile.php/1212/course/section/1199/Brandes%20-%20A%20faster%20algorithm%20for%20betweenness%20centrality%2C%202001.pdf
+def brandesAlgorithm(matrix):
     size = int(math.sqrt(matrix.size))
+    V = range(size)
     C = np.zeros(size)
-    #P = np.array((size, size))
-    P = np.empty(size, dtype=np.object)
-    for i in range(P.shape[0]):
-        P[i] = []
-    for node in range(size):
+    for node in V:
         S = []
-        #P[node] = []
-        ro = np.zeros(size)
-        ro[node] = 1
+        P = np.empty(size, dtype=np.object)
+        for i in range(P.shape[0]):
+            P[i] = []
+        sigma = np.zeros(size)
+        sigma[node] = 1
         d = np.full(size, -1)
         d[node] = 0
-        queue = []
-        hq.heappush(queue, node)
-        while len(queue) > 0:
-            v = hq.heappop(queue)
-            S.append(v)
-            for w in range(size):
-                if matrix[v][w] == 1:
-                    if d[w] < 0:
-                        hq.heappush(queue, w)
-                        d[w] = d[v] + 1
-                    if d[w] == d[v] + 1:
-                        ro[w] += ro[v]
-                        P[w].append(v)
-        delta = np.zeros(size)
-        while len(S) > 0:
-            w = S.pop()
-            for v in P[w]:
-                delta[v] = delta[v] + (ro[v]/ro[w])*(1+delta[w])
-            if w != node:
-                C[w] = C[w] + delta[w]
-    return C
-
-def brandes(n, A):
-    "Compute betweenness centrality in an unweighted graph."
-    # Brandes algorithm
-    V = range(n)
-    C = dict((v,0) for v in V)
-    for s in V:
-        S = []
-        P = dict((w,[]) for w in V)
-        g = dict((t, 0) for t in V); g[s] = 1
-        d = dict((t,-1) for t in V); d[s] = 0
-        Q = deque([])
-        Q.append(s)
-        while Q:
-            v = Q.popleft()
+        queue = deque([])
+        queue.append(node)
+        while queue:
+            v = queue.popleft()
             S.append(v)
             for w in V:
-                if A[v][w] == 1:
+                if matrix[v][w] == 1:
                     if d[w] < 0:
-                        Q.append(w)
+                        queue.append(w)
                         d[w] = d[v] + 1
                     if d[w] == d[v] + 1:
-                        g[w] = g[w] + g[v]
+                        sigma[w] = sigma[w] + sigma[v]
                         P[w].append(v)
-        e = dict((v, 0) for v in V)
+        delta = np.zeros(size)
         while S:
             w = S.pop()
             for v in P[w]:
-                e[v] = e[v] + (g[v]/g[w]) * (1 + e[w])
-            if w != s:
-                C[w] = C[w] + e[w]
+                delta[v] = delta[v] + (sigma[v]/sigma[w])*(1+delta[w])
+            if w != node:
+                C[w] = C[w] + delta[w]
     return C
 
 def test():
@@ -143,33 +112,28 @@ def testB():
             [0, 0, 0, 1, 0, 0],
             [0, 0, 0, 0, 1, 0],
             [1, 0, 0, 0, 0, 1]]
-    matrix = np.array(mat1)
-    C = brandeAlgorithm(matrix)
-    print(C)
-
-def testC():
-    mat1 = [[1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 0],
-            [1, 1, 1, 0, 1],
-            [1, 1, 0, 1, 0],
-            [1, 0, 1, 0, 1]]
-    mat2 = [[1, 1, 1, 0, 1, 0],
-            [0, 1, 0, 1, 0, 0],
-            [0, 0, 1, 0, 0, 0],
-            [0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 1, 0],
-            [1, 0, 0, 0, 0, 1]]
-
     mat3 = [[1, 1, 1, 0, 1, 1],
             [1, 1, 0, 1, 0, 0],
             [1, 0, 1, 0, 0, 0],
             [0, 1, 0, 1, 0, 0],
             [1, 0, 0, 0, 1, 0],
             [1, 0, 0, 0, 0, 1]]
-    c = brandes(5, mat1)
-    print(c)
-    c = brandes(6, mat3)
-    print(c)
+    mat4 = [[1, 0, 1, 0, 0, 0, 0],
+            [0, 1, 1, 0, 0, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0],
+            [0, 0, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 1, 1],
+            [0, 0, 0, 0, 0, 0, 1]]
+    matrix = np.array(mat1)
+    C = brandeAlgorithm(matrix)
+    print(C)
+    matrix = np.array(mat3)
+    C = brandeAlgorithm(matrix)
+    print(C)
+    matrix = np.array(mat4)
+    C = brandeAlgorithm(matrix)
+    print(C)
 
 if __name__ == '__main__':
-    testC()
+    testB()

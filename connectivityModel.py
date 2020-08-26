@@ -109,29 +109,14 @@ def main():
     #edgVals, edgCounts = np.unique(edgesPN, return_counts=True)
     #edgHist = dict(zip(edgVals, edgCounts))
 
+    centrality = paths.brandesAlgorithm(binMatrix)
+
     # Creates a figure for the histogram of node degree and nodes per connected components
-    fig2, ax2 = plt.subplots(1, 2)
+    fig2, ax2 = plt.subplots(1, 3)
     # Creates the graph of each node degree
     ax2[0].hist(edgesPN, bins = int(np.amax(edgesPN)))
     ax2[1].hist(nodesPCC_WOZ, bins = len(nodesPCC_WOZ))
-
-    mat0 = [[1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 0],
-            [1, 1, 1, 0, 1],
-            [1, 1, 0, 1, 0],
-            [1, 0, 1, 0, 1]]
-    mat1 = np.array(mat0)
-    counts = np.zeros(5)
-    for i in range(0, 5):
-        dis, prev = paths.shortestPath(mat1, i)
-        for j in range(0, 5):
-            rec = paths.reconstructPath(prev, i, j)
-            for node in range(1, len(rec)-1):
-                counts[node] += 1
-
-    print('Los conteos son: ')
-    print(counts)
-
+    ax2[2].hist(centrality)
 
     figFolder = 'Figures/Saved/'
     # Style and info for the network plots figure
