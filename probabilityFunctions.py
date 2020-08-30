@@ -28,9 +28,20 @@ def getDistance(cellA, cellB):
 
 # This function calculates the overlap area of two circles or radius 'radius'
 def overlapArea(distance, radius):
+    distance = abs(distance)
+    radius = abs(radius)
+    if radius*2 < distance:
+        return None
     return 2*radius*radius*math.acos(distance/(2*radius)) - distance/2 * math.sqrt((4*radius*radius) - (distance*distance))
 
 def overlapArea2Rad(d, r, R):
+    d = abs(d)
+    r = abs(r)
+    R = abs(R)
+    if r+R < d:
+        return None
+    if d == 0:
+        return min(r, R)
     arg1 = r**2*math.acos((d**2+r**2-R**2)/(2*d*r)) + R**2*math.acos((d**2+R**2-r**2)/(2*d*R))
     arg2 = (1/2)*math.sqrt((-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R))
     return arg1 - arg2
@@ -71,3 +82,8 @@ def probWOAdjust(distance, radius):
     if distance <= radius:
         return 1
     return sigmoid(proportion(distance, radius))
+
+if __name__ == "__main__":
+    res = overlapArea2Rad(100, 800, 300)
+    print(res)
+    print(math.pi*300*300)
