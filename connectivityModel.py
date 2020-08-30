@@ -81,7 +81,7 @@ def main():
     #networkPlots.drawEdges(binMatrix, cells, ax)
 
     # Create a binary matrix for a given probability matrix and criterion 0.0-1.0
-    binMatrix = connectionMatrix.binaryMatrix(matrix, criterion)
+    binMatrix, adjList = connectionMatrix.binaryMatrix(matrix, criterion)
 
     # Get total number of connected components. Disc: One connected component has more than one node
     # Returns two objects, a dict of lists indicating the nodes that belong to each cc (cc[0] has isolated nodes)
@@ -109,7 +109,8 @@ def main():
     #edgVals, edgCounts = np.unique(edgesPN, return_counts=True)
     #edgHist = dict(zip(edgVals, edgCounts))
 
-    centrality = paths.brandesAlgorithm(binMatrix)
+    #adjList = connectionMatrix.binMatrixtoAdjList(binMatrix)
+    centrality = paths.brandeAlgorithmAdj(adjList)
 
     # Creates a figure for the histogram of node degree and nodes per connected components
     fig2, ax2 = plt.subplots(1, 3)
