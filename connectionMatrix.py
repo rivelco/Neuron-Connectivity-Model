@@ -8,8 +8,6 @@ import math
 def probabilityMatrix(cells, criteria, radius):
     size = len(cells)       # Get the total number of nodes on dict
     matrix = np.empty((size, size))
-    #matrix = [[0 for x in range(size+1)] for y in range(size+1)]    # Declare a squared matrix
-
     for i, cellA in enumerate(cells):               # Iterates over each node
         for j in range(i, size):
             cellB = cells[j]
@@ -49,13 +47,75 @@ def probabilityMatrix2Rad(cells, criteria):
 def binaryMatrix(matrix, criterion):
     size = int(math.sqrt(matrix.size))
     binMatrix = np.empty((size, size))
-
+    adjList = {}
     for i in range(size):
         for j in range(i, size):
+            adjList[i] = adjList.get(i, [])
+            adjList[j] = adjList.get(j, [])
             if matrix[i][j] >= criterion:
                 binMatrix[i][j] = 1
                 binMatrix[j][i] = 1
+                if i != j:
+                    adjList[i].append(j)
+                    adjList[j].append(i)
             else:
                 binMatrix[i][j] = 0
                 binMatrix[j][i] = 0
-    return binMatrix
+    return binMatrix, adjList
+
+def binMatrixtoAdjList(matrix):
+    size = int(math.sqrt(matrix.size))
+    adjList = {}
+    for i in range(0, size):
+        for j in range(0, size):
+            adjList[i] = adjList.get(i, [])
+            if matrix[i][j] == 1 and i != j:
+                adjList[i].append(j)
+    return adjList
+
+if __name__ == '__main__':
+    mat0 = [[1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0],
+            [1, 0, 1, 0, 0],
+            [1, 0, 0, 1, 0],
+            [1, 0, 0, 0, 1]]
+    mat1 = [[1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 0],
+            [1, 1, 1, 0, 1],
+            [1, 1, 0, 1, 0],
+            [1, 0, 1, 0, 1]]
+    mat2 = [[1, 1, 1, 0, 1, 0],
+            [0, 1, 0, 1, 0, 0],
+            [0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 1, 0],
+            [1, 0, 0, 0, 0, 1]]
+    mat3 = [[1, 1, 1, 0, 1, 1],
+            [1, 1, 0, 1, 0, 0],
+            [1, 0, 1, 0, 0, 0],
+            [0, 1, 0, 1, 0, 0],
+            [1, 0, 0, 0, 1, 0],
+            [1, 0, 0, 0, 0, 1]]
+    mat4 = [[1, 0, 1, 0, 0, 0, 0],
+            [0, 1, 1, 0, 0, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0],
+            [0, 0, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 1, 1],
+            [0, 0, 0, 0, 0, 0, 1]]
+    matrix = np.array(mat0)
+    C = binMatrixtoAdjList(matrix)
+    print(C)
+    print(type(C))
+    matrix = np.array(mat1)
+    C = binMatrixtoAdjList(matrix)
+    print(C)
+    matrix = np.array(mat2)
+    C = binMatrixtoAdjList(matrix)
+    print(C)
+    matrix = np.array(mat3)
+    C = binMatrixtoAdjList(matrix)
+    print(C)
+    matrix = np.array(mat4)
+    C = binMatrixtoAdjList(matrix)
+    print(C)
