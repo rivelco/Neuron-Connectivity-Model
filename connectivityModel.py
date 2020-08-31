@@ -15,13 +15,14 @@ def main():
     animal = 'Control 6 L1'                 # Animal
     slice = '1D'                            # Slice and side, number may be 1-4, side may be D or I
     anathomicSc = 'all'                     # Section inside nuclei, may be 1-3, or all
-    fixedRadius = True                      # Indicating if the program must work with fixed or random radius values
+    fixedRadius = False                      # Indicating if the program must work with fixed or random radius values
     # Location of file to analyze
     fileLocation = 'Data/For processing/' + animal + '/' + slice + '.csv'
     #fileLocation = 'Data/Test/1D.csv'
 
-    criteria = 1                            # Connectivity criteria, may be 1 or 2
-    criterion = 3/7                         # Criterion used for connections
+    criteria = 2                            # Connectivity criteria, may be 1 or 2
+    criterion = 3/7                         # Criterion used for connections -> 1 - (4/7)
+    #criterion = 0
 
     aboutCrit = ''
     if criteria == 2:
@@ -110,7 +111,7 @@ def main():
     #edgHist = dict(zip(edgVals, edgCounts))
 
     #adjList = connectionMatrix.binMatrixtoAdjList(binMatrix)
-    centrality = paths.brandeAlgorithmAdj(adjList)
+    centrality = paths.brandeAlgorithm(adjList)
 
     # Creates a figure for the histogram of node degree and nodes per connected components
     fig2, ax2 = plt.subplots(1, 3)
@@ -151,6 +152,12 @@ def main():
     ax2[1].set_xlabel('Number of cells')
     ax2[1].set_ylabel('Number of connected components')
     ax2[1].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    ax2[2].set_title('Centrality degree', fontsize=10)
+    ax2[2].spines['top'].set_visible(False)
+    ax2[2].spines['right'].set_visible(False)
+    ax2[2].set_xlabel('Centrality degree')
+    ax2[2].set_ylabel('Number of cells')
+    ax2[2].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
     fig2Name = animal + '-' + slice + ' - Hist' + '.png'
     fig2.savefig(figFolder + fig2Name, format='png')
 
