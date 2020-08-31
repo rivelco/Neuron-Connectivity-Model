@@ -52,7 +52,7 @@ def binaryMatrix(matrix, criterion):
         for j in range(i, size):
             adjList[i] = adjList.get(i, [])
             adjList[j] = adjList.get(j, [])
-            if matrix[i][j] >= criterion:
+            if matrix[i][j] > criterion:
                 binMatrix[i][j] = 1
                 binMatrix[j][i] = 1
                 if i != j:
