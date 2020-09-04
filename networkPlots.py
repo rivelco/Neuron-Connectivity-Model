@@ -16,7 +16,7 @@ def drawEdges(matrix, cells, ax):
                 yValues = [cells[i].y, cells[j].y]      # And the 'x' coordinates too
                 ax.plot(xValues, yValues, zorder=2, color='#FFFF00')     # Plot that edge
 
-def drawNodes(cells, ax):
+def drawNodes(cells, ax, tags):
     listXM = []      # List for 'x' coordinates
     listYM = []      # List for 'y' coordinates
     listXV = []      # List for 'x' coordinates
@@ -37,10 +37,19 @@ def drawNodes(cells, ax):
             listYL.append(cell.y)
     if len(listXM) > 0:
         ax.scatter(listXM, listYM, marker='.', c='#FF0000', alpha=1, edgecolor='none', label='Dorsal medial', zorder=3)  # Plots those coordinates
+        if tags:
+            for i, tag in enumerate(range(len(listXM))):
+                ax.annotate(tag, (listXM[i], listYM[i]))
     if len(listXL) > 0:
         ax.scatter(listXL, listYL, marker='.', c='#0000FF', alpha=1, edgecolor='none', label='Dorsal lateral', zorder=3)  # Plots those coordinates
+        if tags:
+            for i, tag in enumerate(range(len(listXL))):
+                ax.annotate(tag, (listXL[i], listYL[i]))
     if len(listXV) > 0:
         ax.scatter(listXV, listYV, marker='.', c='#00FF00', alpha=1, edgecolor='none', label='Ventral', zorder=3)  # Plots those coordinates
+        if tags:
+            for i, tag in enumerate(range(len(listXV))):
+                ax.annotate(tag, (listXV[i], listYV[i]))
 
 def markThisCells(toDraw, cells, color, ax):
     listX = []
@@ -50,7 +59,7 @@ def markThisCells(toDraw, cells, color, ax):
         listX.append(temp.x)
         listY.append(temp.y)
     if len(listX) > 0:
-        ax.scatter(listX, listY, marker='o', c=color, alpha=1, edgecolor='none', zorder=5, label='Isolated cell')
+        ax.scatter(listX, listY, marker='.', c=color, alpha=1, edgecolor='none', zorder=5, label='Isolated cell')
 
 def drawConnectedComponents(ccomponents, matrix, cells, ax):
     size = int(math.sqrt(matrix.size))

@@ -4,6 +4,8 @@ import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+from statsmodels.graphics.gofplots import qqplot
+from scipy.stats import normaltest
 
 import getData
 import connectionMatrix
@@ -15,10 +17,13 @@ import clustering
 import nullModel
 
 def main():
-    animal = 'AVP 3 L1'                 # Animal
+    nullModeling = True
+    noc = 228
+
+    animal = 'Control 6 L1'                 # Animal
     slice = '1D'                            # Slice and side, number may be 1-4, side may be D or I
     anathomicSc = 'all'                     # Section inside nuclei, may be 1-3, or all
-    fixedRadius = False                      # Indicating if the program must work with fixed or random radius values
+    fixedRadius = True                      # Indicating if the program must work with fixed or random radius values
     # Location of file to analyze
     fileLocation = 'Data/For processing/' + animal + '/' + slice + '.csv'
     #fileLocation = 'Data/Test/1D.csv'
@@ -35,12 +40,16 @@ def main():
     else:
         aboutRad = 'Radius size fixed at 125um'
 
-    print('\n#### ' + animal + ' - ' + slice + ' ####')
-
     # Numpy array with converted data extracted from csv file
     # Receives two parameters, a string with file location, and a string indicating the slice, 'all' for all
-    cells = getData.extractCells(fileLocation, anathomicSc)
-    #cells = nullModel.generateCells(400, 2250, 2500, 4500, 5000)
+    if nullModeling:
+        #cells = nullModel.generateCells(350, 3500, 5500)
+        cells = nullModel.generateCells(noc, True, 4000, 5000)
+        animal = 'Null model - {} cells'.format(noc)
+    else:
+        cells = getData.extractCells(fileLocation, anathomicSc)
+
+    print('\n#### ' + animal + ' - ' + slice + ' ####')
     print('Total number of nodes analyzed: {}'.format(len(cells)))
 
     # Probability table using numpy, for table[a][b] says the probability of connection between node 'a' and 'b'
@@ -75,11 +84,11 @@ def main():
 
     # Puts on ax the plot for each node
     # Receives two parameters, the cells array for coords and the ax for drawing
-    networkPlots.drawNodes(cells, ax)
+    networkPlots.drawNodes(cells, ax, False)
 
     # Puts on ax the plot for the dendritic fields of each cell
     # Receives three parameter, the array with cells info, the ax and a bool indicating if it has to plot fixed radius
-    networkPlots.drawDendriticFields(cells, ax, fixedRadius)
+    #networkPlots.drawDendriticFields(cells, ax, fixedRadius)
 
     # Puts on ax the draw of all edges on a given binary matrix
     #networkPlots.drawEdges(binMatrix, cells, ax)
@@ -130,6 +139,9 @@ def main():
     #fig3.set_size_inches((7.15,9.1))
     #ax3.set_xlim(-500, 5000)
     #ax3.set_ylim(-500, 6500)
+    #qqplot(edgesPN, line='s')
+    #stat, p = normaltest(edgesPN)
+    #print('Statistics=%.3f, p=%.3f' % (stat, p))
 
     # Creates a figure for the histogram of node degree and nodes per connected components
     fig2, ax2 = plt.subplots(1, 4)
@@ -156,7 +168,7 @@ def main():
     fig.savefig(figFolder + figName, format='png')
 
     # Style and info for the histograms
-    fig2.set_size_inches((9, 5))
+    fig2.set_size_inches((15, 5))
     fig2.suptitle('Histograms of frequency', fontsize=16)
 
     ax2[0].set_title('Number of edges per node', fontsize=10)

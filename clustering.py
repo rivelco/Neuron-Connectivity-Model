@@ -15,6 +15,16 @@ def singleLocalClusteringCoef(node, adjList, matrix):
     C = (2*existent)/(k*(k-1))
     return C
 
+def localClusteringCoef(cells, adjList, matrix):
+    clustCoefs = np.empty(len(cells))
+    for cell in cells:
+        current = singleLocalClusteringCoef(cell.name, adjList, matrix)
+        clustCoefs[cell.name] = current
+    return clustCoefs
+
+def globalClusteringCoef(clusteringCoefs):
+    return np.average(clusteringCoefs)
+
 def singleTransitivityCoef(nodeA, adjList, matrix):
     k = len(adjList[nodeA])
     length3 = 0
@@ -42,21 +52,3 @@ def transitivityCoef(cells, adjList, matrix):
         return 0
     coef = length3 / length2
     return coef
-
-def localClusteringCoef(cells, adjList, matrix):
-    clustCoefs = np.empty(len(cells))
-    for cell in cells:
-        current = singleLocalClusteringCoef(cell.name, adjList, matrix)
-        clustCoefs[cell.name] = current
-    return clustCoefs
-
-def globalClusteringCoef(clusteringCoefs):
-    #return np.average(clusteringCoefs)
-    sum = 0
-    cant = 0
-    for i in range(len(clusteringCoefs)):
-        some = clusteringCoefs[i]
-        if not np.isnan(some):
-            sum += some
-            cant += 1
-    return sum/cant

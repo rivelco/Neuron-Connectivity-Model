@@ -2,6 +2,17 @@ import probabilityFunctions as pf
 import numpy as np
 import math
 
+def distanceMatrix(cells):
+    size = len(cells)
+    matrix = np.empty((size, size))
+    for i, cellA in enumerate(cells):
+        for j in range(i, size):
+            cellB = cells[j]
+            distance = pf.getDistance(cellA, cellB)
+            matrix[cellA.name][cellB.name] = distance
+            matrix[cellB.name][cellA.name] = distance
+    return matrix
+
 # This function creates a squared probability matrix
 # For matrix[a][b] we get the probability of connection between node 'a' and node 'b'
 # this probability is based on certain criteria, it may be 1 or 2
