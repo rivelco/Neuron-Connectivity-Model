@@ -3,6 +3,7 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 import getData
 import connectionMatrix
@@ -11,6 +12,7 @@ import connectedComponents
 import probabilityFunctions as pf
 import paths
 import clustering
+import nullModel
 
 def main():
     animal = 'AVP 3 L1'                 # Animal
@@ -23,7 +25,6 @@ def main():
 
     criteria = 2                            # Connectivity criteria, may be 1 or 2
     criterion = 3/7                        # Criterion used for connections -> 1 - (3/7)
-    #criterion = 0
 
     aboutCrit = ''
     if criteria == 2:
@@ -39,6 +40,7 @@ def main():
     # Numpy array with converted data extracted from csv file
     # Receives two parameters, a string with file location, and a string indicating the slice, 'all' for all
     cells = getData.extractCells(fileLocation, anathomicSc)
+    #cells = nullModel.generateCells(400, 2250, 2500, 4500, 5000)
     print('Total number of nodes analyzed: {}'.format(len(cells)))
 
     # Probability table using numpy, for table[a][b] says the probability of connection between node 'a' and 'b'
@@ -77,7 +79,7 @@ def main():
 
     # Puts on ax the plot for the dendritic fields of each cell
     # Receives three parameter, the array with cells info, the ax and a bool indicating if it has to plot fixed radius
-    #networkPlots.drawDendriticFields(cells, ax, fixedRadius)
+    networkPlots.drawDendriticFields(cells, ax, fixedRadius)
 
     # Puts on ax the draw of all edges on a given binary matrix
     #networkPlots.drawEdges(binMatrix, cells, ax)
@@ -104,7 +106,6 @@ def main():
     nodesPCC = connectedComponents.nodesPerCC(ccomponents)
     nodesPCC_WOZ = connectedComponents.nodesPerCC_WOZ(ccomponents)
     print('Median of nodes per cc: {}'.format(np.median(nodesPCC_WOZ)))
-    print(nodesPCC_WOZ)
 
     # Returns a numpy array indicating the degree (number of edges) of each node
     edgesPN = connectedComponents.edgesPerNode(binMatrix)
@@ -120,6 +121,15 @@ def main():
 
     transitivity = clustering.transitivityCoef(cells, adjList, binMatrix)
     print('Transitivity of the network:', transitivity)
+
+    ######## About null model ##########
+
+    #nullCells = nullModel.generateCells(400, 2250, 2500, 4500, 5000)
+    #fig3, ax3 = plt.subplots()
+    #networkPlots.drawNodes(nullCells, ax3)
+    #fig3.set_size_inches((7.15,9.1))
+    #ax3.set_xlim(-500, 5000)
+    #ax3.set_ylim(-500, 6500)
 
     # Creates a figure for the histogram of node degree and nodes per connected components
     fig2, ax2 = plt.subplots(1, 4)

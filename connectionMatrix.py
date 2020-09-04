@@ -8,7 +8,7 @@ import math
 def probabilityMatrix(cells, criteria, radius):
     size = len(cells)       # Get the total number of nodes on dict
     matrix = np.empty((size, size))
-    for i, cellA in enumerate(cells):               # Iterates over each node
+    for i, cellA in enumerate(cells):                       # Iterates over each node
         for j in range(i, size):
             cellB = cells[j]
             distance = pf.getDistance(cellA, cellB)         # Get the distance between cellA and cellB
@@ -28,7 +28,7 @@ def probabilityMatrix2Rad(cells, criteria):
     size = len(cells)       # Get the total number of nodes on cells
     matrix = np.empty((size, size))
 
-    for i, cellA in enumerate(cells):               # Iterates over each node
+    for i, cellA in enumerate(cells):                       # Iterates over each node
         for j in range(i, size):
             cellB = cells[j]
             distance = pf.getDistance(cellA, cellB)         # Get the distance between cellA and cellB
