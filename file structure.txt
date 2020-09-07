@@ -1,0 +1,23 @@
+python connectivityModel.py [ANIMAL] [SLICE] [SECTION]
+
+================================================================================
+General table
+
+| Animal | Slice | Section | Number of nodes | Fixed radius | Criteria | Criterion | Number of components | Isolated nodes | Global clustering coefficient | Transitivity |
+
+================================================================================
+
+Directory of cells
+| Cell |  x  |  y  |  name  | slice | radius |
+
+================================================================================
+
+Table nodes per component
+
+|  Comp  | Number of nodes | Global clustering coefficient | Transitivity |
+
+================================================================================
+
+Table of nodes degrees, centrality
+
+| Node | Degree | Centrality | Clustering |

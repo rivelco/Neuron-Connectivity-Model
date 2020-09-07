@@ -15,6 +15,7 @@ import probabilityFunctions as pf
 import paths
 import clustering
 import nullModel
+import cellsDistribution
 
 def main():
     nullModeling = True
@@ -23,7 +24,7 @@ def main():
     animal = 'Control 6 L1'                 # Animal
     slice = '1D'                            # Slice and side, number may be 1-4, side may be D or I
     anathomicSc = 'all'                     # Section inside nuclei, may be 1-3, or all
-    fixedRadius = True                      # Indicating if the program must work with fixed or random radius values
+    fixedRadius = False                      # Indicating if the program must work with fixed or random radius values
     # Location of file to analyze
     fileLocation = 'Data/For processing/' + animal + '/' + slice + '.csv'
     #fileLocation = 'Data/Test/1D.csv'
@@ -118,7 +119,7 @@ def main():
 
     # Returns a numpy array indicating the degree (number of edges) of each node
     edgesPN = connectedComponents.edgesPerNode(binMatrix)
-    print('Median of edges per node: {}'.format(np.median(edgesPN)))
+    #print('Median of edges per node: {}'.format(np.median(edgesPN)))
     #edgVals, edgCounts = np.unique(edgesPN, return_counts=True)
     #edgHist = dict(zip(edgVals, edgCounts))
 
@@ -131,17 +132,7 @@ def main():
     transitivity = clustering.transitivityCoef(cells, adjList, binMatrix)
     print('Transitivity of the network:', transitivity)
 
-    ######## About null model ##########
-
-    #nullCells = nullModel.generateCells(400, 2250, 2500, 4500, 5000)
-    #fig3, ax3 = plt.subplots()
-    #networkPlots.drawNodes(nullCells, ax3)
-    #fig3.set_size_inches((7.15,9.1))
-    #ax3.set_xlim(-500, 5000)
-    #ax3.set_ylim(-500, 6500)
-    #qqplot(edgesPN, line='s')
-    #stat, p = normaltest(edgesPN)
-    #print('Statistics=%.3f, p=%.3f' % (stat, p))
+    distCells = cellsDistribution.distribution1D(range(1, len(cells)), cells, 'x')
 
     # Creates a figure for the histogram of node degree and nodes per connected components
     fig2, ax2 = plt.subplots(1, 4)
@@ -149,7 +140,8 @@ def main():
     ax2[0].hist(edgesPN, bins = int(np.amax(edgesPN)))
     ax2[1].hist(nodesPCC_WOZ)
     ax2[2].hist(centrality)
-    ax2[3].hist(localClustering)
+    ax2[3].hist(distCells)
+    #ax2[3].hist(localClustering)
 
     figFolder = 'Figures/Saved/'
     # Style and info for the network plots figure
