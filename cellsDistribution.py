@@ -5,6 +5,6 @@ def distribution1D(cells, cellsDic, axis):
     for i, cell in enumerate(cells):
         if axis == 'x':
             histogram[i] = cellsDic[cell].x
-        elif acis == 'y':
+        elif axis == 'y':
             histogram[i] = cellsDic[cell].y
     return histogram
