@@ -17,9 +17,9 @@ def singleLocalClusteringCoef(node, adjList, matrix):
 
 def localClusteringCoef(cells, adjList, matrix):
     clustCoefs = np.empty(len(cells))
-    for cell in cells:
-        current = singleLocalClusteringCoef(cell.name, adjList, matrix)
-        clustCoefs[cell.name] = current
+    for i, cell in enumerate(cells):
+        current = singleLocalClusteringCoef(cell, adjList, matrix)
+        clustCoefs[i] = current
     return clustCoefs
 
 def globalClusteringCoef(clusteringCoefs):
@@ -44,7 +44,7 @@ def transitivityCoef(cells, adjList, matrix):
     length3 = 0
     length2 = 0
     for cell in cells:
-        l3, l2 = singleTransitivityCoef(cell.name, adjList, matrix)
+        l3, l2 = singleTransitivityCoef(cell, adjList, matrix)
         length2 += l2
         length3 += l3
 
