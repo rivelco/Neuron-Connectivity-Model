@@ -18,19 +18,19 @@ import nullModel
 import cellsDistribution
 
 def main():
-    nullModeling = True
-    noc = 228
+    nullModeling = False
+    noc = 433
 
     animal = 'Control 6 L1'                 # Animal
     slice = '1D'                            # Slice and side, number may be 1-4, side may be D or I
     anathomicSc = 'all'                     # Section inside nuclei, may be 1-3, or all
-    fixedRadius = False                      # Indicating if the program must work with fixed or random radius values
+    fixedRadius = False                     # Indicating if the program must work with fixed or random radius values
     # Location of file to analyze
     fileLocation = 'Data/For processing/' + animal + '/' + slice + '.csv'
     #fileLocation = 'Data/Test/1D.csv'
 
     criteria = 2                            # Connectivity criteria, may be 1 or 2
-    criterion = 3/7                        # Criterion used for connections -> 1 - (3/7)
+    criterion = 3/7                         # Criterion used for connections -> 1 - (3/7)
 
     aboutCrit = ''
     if criteria == 2:
@@ -44,14 +44,15 @@ def main():
     # Numpy array with converted data extracted from csv file
     # Receives two parameters, a string with file location, and a string indicating the slice, 'all' for all
     if nullModeling:
-        #cells = nullModel.generateCells(350, 3500, 5500)
         cells = nullModel.generateCells(noc, True, 4000, 5000)
         animal = 'Null model - {} cells'.format(noc)
     else:
         cells = getData.extractCells(fileLocation, anathomicSc)
 
+    nCells = len(cells)
+
     print('\n#### ' + animal + ' - ' + slice + ' ####')
-    print('Total number of nodes analyzed: {}'.format(len(cells)))
+    print('Total number of nodes analyzed: {}'.format(nCells-1))
 
     # Probability table using numpy, for table[a][b] says the probability of connection between node 'a' and 'b'
     # Receives three parameters, an array with cells properties, and a number indicating the criteria
@@ -60,7 +61,7 @@ def main():
     matrixFix = connectionMatrix.probabilityMatrix(cells, criteria, 125)
     matrixAlt = connectionMatrix.probabilityMatrix2Rad(cells, criteria)
 
-    matrix = np.empty((len(cells), len(cells)))
+    matrix = np.empty((nCells, nCells))
     if fixedRadius:         # Choose a fixed or random setting
         matrix = matrixFix
     else:
@@ -112,27 +113,35 @@ def main():
     # This function marks a given list of nodes, here is marking the isolated cells in white on ax
     networkPlots.markThisCells(ccomponents[0], cells, '#FFFFFF', ax)
 
+    ccClustering = np.empty(len(ccomponents)-1)
+    for i in range(0, len(ccomponents)-1):
+        ccClusteringTemp = clustering.localClusteringCoef(ccomponents[i+1], adjList, binMatrix)
+        ccClustering[i] = clustering.globalClusteringCoef(ccClusteringTemp)
+
+    ccTransitivity = np.empty(len(ccomponents)-1)
+    for i in range(0, len(ccomponents)-1):
+        ccTransitivity[i] = clustering.transitivityCoef(ccomponents[i+1], adjList, binMatrix)
+
     # This function returns the amount of nodes per connected component on a dict of lists
     nodesPCC = connectedComponents.nodesPerCC(ccomponents)
     nodesPCC_WOZ = connectedComponents.nodesPerCC_WOZ(ccomponents)
-    print('Median of nodes per cc: {}'.format(np.median(nodesPCC_WOZ)))
+    #print('Median of nodes per cc: {}'.format(np.median(nodesPCC_WOZ)))
 
     # Returns a numpy array indicating the degree (number of edges) of each node
     edgesPN = connectedComponents.edgesPerNode(binMatrix)
     #print('Median of edges per node: {}'.format(np.median(edgesPN)))
-    #edgVals, edgCounts = np.unique(edgesPN, return_counts=True)
-    #edgHist = dict(zip(edgVals, edgCounts))
 
     #adjList = connectionMatrix.binMatrixtoAdjList(binMatrix)
     centrality = paths.brandeAlgorithm(adjList)
-    localClustering = clustering.localClusteringCoef(cells, adjList, binMatrix)
+    localClustering = clustering.localClusteringCoef(range(1, nCells), adjList, binMatrix)
     globalClustering = clustering.globalClusteringCoef(localClustering)
     print('Global clustering coefficient:', globalClustering)
 
-    transitivity = clustering.transitivityCoef(cells, adjList, binMatrix)
+    transitivity = clustering.transitivityCoef(range(1, nCells), adjList, binMatrix)
     print('Transitivity of the network:', transitivity)
 
-    distCells = cellsDistribution.distribution1D(range(1, len(cells)), cells, 'x')
+    distCellsX = cellsDistribution.distribution1D(range(1, nCells), cells, 'x')
+    distCellsY = cellsDistribution.distribution1D(range(1, nCells), cells, 'y')
 
     # Creates a figure for the histogram of node degree and nodes per connected components
     fig2, ax2 = plt.subplots(1, 4)
@@ -140,8 +149,8 @@ def main():
     ax2[0].hist(edgesPN, bins = int(np.amax(edgesPN)))
     ax2[1].hist(nodesPCC_WOZ)
     ax2[2].hist(centrality)
-    ax2[3].hist(distCells)
-    #ax2[3].hist(localClustering)
+    ax2[3].hist2d(distCellsX, distCellsY, bins=(20,25), cmap=plt.cm.jet)
+    #ax2[3].hist(ccTransitivity)
 
     figFolder = 'Figures/Saved/'
     # Style and info for the network plots figure
