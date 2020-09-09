@@ -6,6 +6,7 @@ import numpy as np
 import random
 from statsmodels.graphics.gofplots import qqplot
 from scipy.stats import normaltest
+import sys
 
 import getData
 import connectionMatrix
@@ -18,55 +19,125 @@ import nullModel
 import cellsDistribution
 
 def main():
-    nullModeling = False
-    noc = 433
+    animal = sys.argv[1]
+    slice = sys.argv[2]
+    section = sys.argv[3]
+    fixedRadius = sys.argv[4]
 
-    animal = 'Control 6 L1'                 # Animal
-    slice = '1D'                            # Slice and side, number may be 1-4, side may be D or I
-    anathomicSc = 'all'                     # Section inside nuclei, may be 1-3, or all
-    fixedRadius = False                     # Indicating if the program must work with fixed or random radius values
+    fGeneralTable = {}
+    fDirectCells = []
+    fConnectComps = []
+    fNodesInfo = []
+
+    nullModeling = False
+    noc = 350
+
+    #animal = 'Control 6 L1'                 # Animal
+    #slice = '1D'                            # Slice and side, number may be 1-4, side may be D or I
+    #section = 'all'                         # Section inside nuclei, may be 1-3, or all
+    #fixedRadius = False                     # Indicating if the program must work with fixed or random radius values
     # Location of file to analyze
     fileLocation = 'Data/For processing/' + animal + '/' + slice + '.csv'
-    #fileLocation = 'Data/Test/1D.csv'
 
-    criteria = 2                            # Connectivity criteria, may be 1 or 2
+    criteria = 1                            # Connectivity criteria, may be 1 or 2
     criterion = 3/7                         # Criterion used for connections -> 1 - (3/7)
 
     aboutCrit = ''
     if criteria == 2:
         aboutCrit = 'Connectivity criterion ' + str(criterion)
+
     aboutRad = ''
     if not fixedRadius:
-        aboutRad = 'Random radius values (125-150um)'
+        aboutRad = 'Random radius values (100-150um)'
     else:
-        aboutRad = 'Radius size fixed at 125um'
+        aboutRad = 'Radius size fixed at 125um' #127.47548783981962
 
-    # Numpy array with converted data extracted from csv file
-    # Receives two parameters, a string with file location, and a string indicating the slice, 'all' for all
     if nullModeling:
         cells = nullModel.generateCells(noc, True, 4000, 5000)
         animal = 'Null model - {} cells'.format(noc)
     else:
-        cells = getData.extractCells(fileLocation, anathomicSc)
+        cells = getData.extractCells(fileLocation, section)
 
     nCells = len(cells)
 
-    print('\n#### ' + animal + ' - ' + slice + ' ####')
-    print('Total number of nodes analyzed: {}'.format(nCells-1))
-
-    # Probability table using numpy, for table[a][b] says the probability of connection between node 'a' and 'b'
-    # Receives three parameters, an array with cells properties, and a number indicating the criteria
-    # Matrix alone generates a matrix with a fixed radius on the third argument
-    # Matrix2Rad generates random radius, generated inside the function, just 2 parameters needed
-    matrixFix = connectionMatrix.probabilityMatrix(cells, criteria, 125)
-    matrixAlt = connectionMatrix.probabilityMatrix2Rad(cells, criteria)
-
     matrix = np.empty((nCells, nCells))
     if fixedRadius:         # Choose a fixed or random setting
-        matrix = matrixFix
+        matrix = connectionMatrix.probabilityMatrix(cells, criteria, 125)
     else:
-        matrix = matrixAlt
+        matrix = connectionMatrix.probabilityMatrix2Rad(cells, criteria)
 
+    binMatrix, adjList      = connectionMatrix.binaryMatrix(matrix, criterion)
+    ccomponents, nodesICC   = connectedComponents.connectedComponents(binMatrix)
+    nodesPCC                = connectedComponents.nodesPerCC(ccomponents)
+    nodesPCC_WOZ            = connectedComponents.nodesPerCC_WOZ(ccomponents)
+    edgesPN                 = connectedComponents.edgesPerNode(binMatrix)
+    centrality              = paths.brandeAlgorithm(adjList)
+    localClustering         = clustering.localClusteringCoef(range(1, nCells), adjList, binMatrix)
+    globalClustering        = clustering.globalClusteringCoef(localClustering)
+    transitivity            = clustering.transitivityCoef(range(1, nCells), adjList, binMatrix)
+
+    ccClustering = np.empty(len(ccomponents)-1)
+    for i in range(0, len(ccomponents)-1):
+        ccClusteringTemp    = clustering.localClusteringCoef(ccomponents[i+1], adjList, binMatrix)
+        ccClustering[i]     = clustering.globalClusteringCoef(ccClusteringTemp)
+    ccTransitivity = np.empty(len(ccomponents)-1)
+    for i in range(0, len(ccomponents)-1):
+        ccTransitivity[i]   = clustering.transitivityCoef(ccomponents[i+1], adjList, binMatrix)
+
+    print('\n#### ' + animal + ' - ' + slice + ' ####')
+    print('Total number of nodes analyzed: {}'.format(nCells-1))
+    print("Total number of components: {}".format(len(ccomponents)-1))
+    print('Isolated nodes: {}'.format(len(ccomponents[0]))) # ccomponents[0] contains the isolated nodes
+    print('Global clustering coefficient:', globalClustering)
+    print('Transitivity of the network:', transitivity)
+
+    # Generating texts
+    fGeneralTable['animal'] = animal
+    fGeneralTable['slice'] = slice
+    fGeneralTable['section'] = section
+    fGeneralTable['number of nodes'] = nCells-1
+    fGeneralTable['Fixed radius'] = fixedRadius
+    fGeneralTable['criteria'] = criteria
+    fGeneralTable['criterion'] = criterion
+    fGeneralTable['connected components'] = len(ccomponents) - 1
+    fGeneralTable['isolated cells'] = len(ccomponents[0]) - 1
+    fGeneralTable['global clustering coeff'] = globalClustering
+    fGeneralTable['transitivity'] = transitivity
+
+    folderCrit = ''
+    if criteria == 1:
+        folderCrit = 'Criteria 1/'
+    else:
+        folderCrit = 'Criteria 2/{:.4f}/'.format(criterion)
+    dataFolder = 'savedData/' + animal + '/' + slice + '/' + section + '/'
+
+    with open(dataFolder + animal + ' - GT.csv', mode='a') as csv_file:
+        fieldnames = ['animal', 'slice', 'section', 'number of nodes', 'Fixed radius', 'criteria', 'criterion', 'connected components', 'isolated cells', 'global clustering coeff', 'transitivity']
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(fGeneralTable)
+
+    with open(dataFolder + animal + ' - DC.csv', mode='a') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(['cell', 'x', 'y', 'slice', 'radius'])
+        for cell in cells:
+            writer.writerow([cell.name, cell.x, cell.y, cell.slice, cell.radius])
+
+    with open(dataFolder + animal + ' - CC.csv', mode='a') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(['comp', 'bumber of nodes', 'global clustering coefficient', 'transitivity'])
+        for i in range(1, len(ccomponents)):
+            ccnow = ccomponents[i]
+            writer.writerow([i, len(ccnow), ccClustering[i-1], ccTransitivity[i-1]])
+
+    with open(dataFolder + animal + ' - ND.csv', mode='a') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(['node', 'degree', 'centrality', 'clustering'])
+        for cell in cells:
+            i = cell.name
+            writer.writerow([i, edgesPN[i], centrality[i], localClustering[i]])
+
+    # Generates the figures
     plt.rcParams.update({                   # Plot style configuration
         "lines.color": "white",
         "patch.edgecolor": "white",
@@ -82,116 +153,101 @@ def main():
         "savefig.facecolor": "black",
         "savefig.edgecolor": "black"})
 
-    fig, ax = plt.subplots()                # Plot for network plots
+    figNetwork, axNetwork = plt.subplots()
+    networkPlots.drawNodes(cells, axNetwork, False)
+    networkPlots.drawConnectedComponents(ccomponents, binMatrix, cells, axNetwork)
+    networkPlots.markThisCells(ccomponents[0], cells, '#FFFFFF', axNetwork)
+    #networkPlots.drawDendriticFields(cells, axNetwork, fixedRadius)
+    #networkPlots.drawEdges(binMatrix, cells, axNetwork)
 
-    # Puts on ax the plot for each node
-    # Receives two parameters, the cells array for coords and the ax for drawing
-    networkPlots.drawNodes(cells, ax, False)
+    figNodes, axNodes = plt.subplots(1, 3)
+    axNodes[0].hist(edgesPN, bins = int(np.amax(edgesPN)))
+    axNodes[1].hist(centrality, bins=12)
+    axNodes[2].hist(localClustering, bins=12)
 
-    # Puts on ax the plot for the dendritic fields of each cell
-    # Receives three parameter, the array with cells info, the ax and a bool indicating if it has to plot fixed radius
-    #networkPlots.drawDendriticFields(cells, ax, fixedRadius)
+    figCC, axCC = plt.subplots(1, 3)
+    axCC[0].hist(nodesPCC_WOZ, bins=10)
+    axCC[1].hist(ccClustering, bins=10)
+    axCC[2].hist(ccTransitivity, bins=12)
 
-    # Puts on ax the draw of all edges on a given binary matrix
-    #networkPlots.drawEdges(binMatrix, cells, ax)
-
-    # Create a binary matrix for a given probability matrix and criterion 0.0-1.0
-    binMatrix, adjList = connectionMatrix.binaryMatrix(matrix, criterion)
-
-    # Get total number of connected components. Disc: One connected component has more than one node
-    # Returns two objects, a dict of lists indicating the nodes that belong to each cc (cc[0] has isolated nodes)
-    # and a numpy array with the ralation of each node belonging to each cc
-    # Receives one parameter, a binary matrix
-    ccomponents, nodesICC = connectedComponents.connectedComponents(binMatrix)
-    print("Total number of components: {}".format(len(ccomponents)-1))
-    # Draw with different colors each connected component
-    # Uses a relation of cc, a binary matrix, the cells info and the ax where the figure will be draw
-    networkPlots.drawConnectedComponents(ccomponents, binMatrix, cells, ax)
-
-    # ccomponents[0] contains the isolated nodes
-    print('Isolated nodes: {}'.format(len(ccomponents[0])))
-    # This function marks a given list of nodes, here is marking the isolated cells in white on ax
-    networkPlots.markThisCells(ccomponents[0], cells, '#FFFFFF', ax)
-
-    ccClustering = np.empty(len(ccomponents)-1)
-    for i in range(0, len(ccomponents)-1):
-        ccClusteringTemp = clustering.localClusteringCoef(ccomponents[i+1], adjList, binMatrix)
-        ccClustering[i] = clustering.globalClusteringCoef(ccClusteringTemp)
-
-    ccTransitivity = np.empty(len(ccomponents)-1)
-    for i in range(0, len(ccomponents)-1):
-        ccTransitivity[i] = clustering.transitivityCoef(ccomponents[i+1], adjList, binMatrix)
-
-    # This function returns the amount of nodes per connected component on a dict of lists
-    nodesPCC = connectedComponents.nodesPerCC(ccomponents)
-    nodesPCC_WOZ = connectedComponents.nodesPerCC_WOZ(ccomponents)
-    #print('Median of nodes per cc: {}'.format(np.median(nodesPCC_WOZ)))
-
-    # Returns a numpy array indicating the degree (number of edges) of each node
-    edgesPN = connectedComponents.edgesPerNode(binMatrix)
-    #print('Median of edges per node: {}'.format(np.median(edgesPN)))
-
-    #adjList = connectionMatrix.binMatrixtoAdjList(binMatrix)
-    centrality = paths.brandeAlgorithm(adjList)
-    localClustering = clustering.localClusteringCoef(range(1, nCells), adjList, binMatrix)
-    globalClustering = clustering.globalClusteringCoef(localClustering)
-    print('Global clustering coefficient:', globalClustering)
-
-    transitivity = clustering.transitivityCoef(range(1, nCells), adjList, binMatrix)
-    print('Transitivity of the network:', transitivity)
-
+    figDist, axDist = plt.subplots()
+    binsX = list(range(-500, 5500, 500))
+    binsY = list(range(-500, 7000, 500))
     distCellsX = cellsDistribution.distribution1D(range(1, nCells), cells, 'x')
     distCellsY = cellsDistribution.distribution1D(range(1, nCells), cells, 'y')
+    axDist.hist2d(distCellsX, distCellsY, bins=(binsX,binsY), cmap=plt.cm.jet)
 
-    # Creates a figure for the histogram of node degree and nodes per connected components
-    fig2, ax2 = plt.subplots(1, 4)
-    # Creates the graph of each node degree
-    ax2[0].hist(edgesPN, bins = int(np.amax(edgesPN)))
-    ax2[1].hist(nodesPCC_WOZ)
-    ax2[2].hist(centrality)
-    ax2[3].hist2d(distCellsX, distCellsY, bins=(20,25), cmap=plt.cm.jet)
-    #ax2[3].hist(ccTransitivity)
-
-    figFolder = 'Figures/Saved/'
     # Style and info for the network plots figure
-    fig.set_size_inches((7.15,9.1))
-    fig.suptitle('Connectivity model - Criteria ' + str(criteria), fontsize=20)
-    ax.set_title( animal + ' - Section ' + slice + '\n' + aboutCrit + '  ' + aboutRad, fontsize=12)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.set_xlabel('X coordinates (um)')
-    ax.set_ylabel('Y coordinates (um)')
-    ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
-    ax.legend()
-    ax.set_xlim(-500, 5000)
-    ax.set_ylim(-500, 6500)
-    figName = animal + '-' + slice + '.png'
-    fig.savefig(figFolder + figName, format='png')
+    figNetwork.set_size_inches((7.15,9.1))
+    figNetwork.suptitle('Connectivity model - Criteria ' + str(criteria), fontsize=20)
+    axNetwork.set_title( animal + ' - Section ' + slice + '\n' + aboutCrit + '  ' + aboutRad, fontsize=12)
+    axNetwork.spines['top'].set_visible(False)
+    axNetwork.spines['right'].set_visible(False)
+    axNetwork.set_xlabel('X coordinates (um)')
+    axNetwork.set_ylabel('Y coordinates (um)')
+    axNetwork.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    axNetwork.legend()
+    axNetwork.set_xlim(-500, 5000)
+    axNetwork.set_ylim(-500, 6500)
+    figNetworkName = animal + '-' + slice + '-' + section + '.png'
+    figNetwork.savefig(dataFolder + figNetworkName, format='png')
+
+    figDist.set_size_inches((7.15,9.1))
+    figDist.suptitle('Density of cells', fontsize=20)
+    axDist.set_title( animal + ' - Section ' + slice + '\n', fontsize=12)
+    axDist.spines['top'].set_visible(False)
+    axDist.spines['right'].set_visible(False)
+    axDist.set_xlabel('X coordinates (um)')
+    axDist.set_ylabel('Y coordinates (um)')
+    figDistName = animal + '-' + slice + '-' + section + ' - Hist2d.png'
+    figDist.savefig(dataFolder + figDistName, format='png')
 
     # Style and info for the histograms
-    fig2.set_size_inches((15, 5))
-    fig2.suptitle('Histograms of frequency', fontsize=16)
+    figNodes.set_size_inches((12, 5))
+    figNodes.suptitle('Histograms per node', fontsize=16)
+    axNodes[0].set_title('Node degree', fontsize=10)
+    axNodes[0].spines['top'].set_visible(False)
+    axNodes[0].spines['right'].set_visible(False)
+    axNodes[0].set_xlabel('Degree')
+    axNodes[0].set_ylabel('Amount of nodes')
+    axNodes[0].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    axNodes[1].set_title('Centrality of each node', fontsize=10)
+    axNodes[1].spines['top'].set_visible(False)
+    axNodes[1].spines['right'].set_visible(False)
+    axNodes[1].set_xlabel('Centrality')
+    axNodes[1].set_ylabel('Amount of nodes')
+    axNodes[1].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    axNodes[2].set_title('Clustering coefficient per node', fontsize=10)
+    axNodes[2].spines['top'].set_visible(False)
+    axNodes[2].spines['right'].set_visible(False)
+    axNodes[2].set_xlabel('Clustering coefficient')
+    axNodes[2].set_ylabel('Amount of nodes')
+    axNodes[2].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    figNodesName = animal + '-' + slice + '-' + section + ' - Hist per nodes.png'
+    figNodes.savefig(dataFolder + figNodesName, format='png')
 
-    ax2[0].set_title('Number of edges per node', fontsize=10)
-    ax2[0].spines['top'].set_visible(False)
-    ax2[0].spines['right'].set_visible(False)
-    ax2[0].set_xlabel('Degree (edges per node)')
-    ax2[0].set_ylabel('Nodes with that degree')
-    ax2[0].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
-    ax2[1].set_title('Number of cells per connected component', fontsize=10)
-    ax2[1].spines['top'].set_visible(False)
-    ax2[1].spines['right'].set_visible(False)
-    ax2[1].set_xlabel('Number of cells')
-    ax2[1].set_ylabel('Number of connected components')
-    ax2[1].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
-    ax2[2].set_title('Centrality degree', fontsize=10)
-    ax2[2].spines['top'].set_visible(False)
-    ax2[2].spines['right'].set_visible(False)
-    ax2[2].set_xlabel('Centrality degree')
-    ax2[2].set_ylabel('Number of cells')
-    ax2[2].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
-    fig2Name = animal + '-' + slice + ' - Hist' + '.png'
-    fig2.savefig(figFolder + fig2Name, format='png')
+    figCC.set_size_inches((12, 5))
+    figCC.suptitle('Histograms per connected component (cc)', fontsize=16)
+    axCC[0].set_title('Amount of nodes per cc', fontsize=10)
+    axCC[0].spines['top'].set_visible(False)
+    axCC[0].spines['right'].set_visible(False)
+    axCC[0].set_xlabel('Quantity')
+    axCC[0].set_ylabel('Amount of cc')
+    axCC[0].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    axCC[1].set_title('Global clustering coefficient per cc', fontsize=10)
+    axCC[1].spines['top'].set_visible(False)
+    axCC[1].spines['right'].set_visible(False)
+    axCC[1].set_xlabel('Global clustering coefficient')
+    axCC[1].set_ylabel('Amount of cc')
+    axCC[1].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    axCC[2].set_title('Transitivity per cc', fontsize=10)
+    axCC[2].spines['top'].set_visible(False)
+    axCC[2].spines['right'].set_visible(False)
+    axCC[2].set_xlabel('Transitivity coefficient')
+    axCC[2].set_ylabel('Amount of cc')
+    axCC[2].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    figCCName = animal + '-' + slice + '-' + section + ' - Hist per cc.png'
+    figCC.savefig(dataFolder + figCCName, format='png')
 
     plt.show()
 
