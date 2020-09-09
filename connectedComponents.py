@@ -3,6 +3,11 @@ import numpy as np
 
 # This funtion find the connected components from a given binary matrix
 # Returns a dict of lists where each list holds the nodes it contains, also a relation of nodes and components
+
+    # Get total number of connected components. Disc: One connected component has more than one node
+    # Returns two objects, a dict of lists indicating the nodes that belong to each cc (cc[0] has isolated nodes)
+    # and a numpy array with the ralation of each node belonging to each cc
+    # Receives one parameter, a binary matrix
 def connectedComponents(matrix):
     size = int(math.sqrt(matrix.size))             # Total amount of nodes in matrix, given that is squared
     nodes = np.full(size, -1)                      # List that indicates the [i] node belongs to the nodes[i] coponent

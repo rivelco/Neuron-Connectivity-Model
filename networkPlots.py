@@ -6,6 +6,7 @@ import random
 import numpy as np
 
 # This function puts on plt cache each valid edge on a given probability matrix
+# Puts on ax the draw of all edges on a given binary matrix
 def drawEdges(matrix, cells, ax):
     size = int(math.sqrt(matrix.size))
     for i in range(size):                 # Iterates over each node
@@ -16,6 +17,8 @@ def drawEdges(matrix, cells, ax):
                 yValues = [cells[i].y, cells[j].y]      # And the 'x' coordinates too
                 ax.plot(xValues, yValues, zorder=2, color='#FFFF00')     # Plot that edge
 
+# Puts on ax the plot for each node
+# Receives two parameters, the cells array for coords and the ax for drawing
 def drawNodes(cells, ax, tags):
     listXM = []      # List for 'x' coordinates
     listYM = []      # List for 'y' coordinates
@@ -51,6 +54,7 @@ def drawNodes(cells, ax, tags):
             for i, tag in enumerate(range(len(listXV))):
                 ax.annotate(tag, (listXV[i], listYV[i]))
 
+# This function marks a given list of nodes, here is marking the isolated cells in white on ax
 def markThisCells(toDraw, cells, color, ax):
     listX = []
     listY = []
@@ -61,6 +65,8 @@ def markThisCells(toDraw, cells, color, ax):
     if len(listX) > 0:
         ax.scatter(listX, listY, marker='.', c=color, alpha=1, edgecolor='none', zorder=5, label='Isolated cell')
 
+# Draw with different colors each connected component
+# Uses a relation of cc, a binary matrix, the cells info and the ax where the figure will be draw
 def drawConnectedComponents(ccomponents, matrix, cells, ax):
     size = int(math.sqrt(matrix.size))
     colors = []
@@ -92,6 +98,8 @@ def drawConnectedComponents(ccomponents, matrix, cells, ax):
 
 # This function puts on plt cache the dendritic fields of a given dict of cells
 # it diferentiates with color for each section or 'Slice'
+# Puts on ax the plot for the dendritic fields of each cell
+# Receives three parameter, the array with cells info, the ax and a bool indicating if it has to plot fixed radius
 def drawDendriticFields(cells, ax, radConst):
     colors = []     # List for the color of each node
     patches = []

@@ -55,6 +55,7 @@ def probabilityMatrix2Rad(cells, criteria):
 
     return matrix   # Returns the final table
 
+# Create a binary matrix for a given probability matrix and criterion 0.0-1.0
 def binaryMatrix(matrix, criterion):
     size = int(math.sqrt(matrix.size))
     binMatrix = np.empty((size, size))
