@@ -18,11 +18,13 @@ import clustering
 import nullModel
 import cellsDistribution
 
-def main():
-    animal = sys.argv[1]
-    slice = sys.argv[2]
-    section = sys.argv[3]
-    fixedRadius = sys.argv[4]
+def main(animal, slice, section, fixedRadius, criteria, criterion):
+    # animal = sys.argv[1]
+    # slice = sys.argv[2]
+    # section = sys.argv[3]
+    # fixedRadius = sys.argv[4]
+    # criteria = sys.argv[5]
+    # criterion = sys.argv[6]
 
     fGeneralTable = {}
     fDirectCells = []
@@ -39,8 +41,8 @@ def main():
     # Location of file to analyze
     fileLocation = 'Data/For processing/' + animal + '/' + slice + '.csv'
 
-    criteria = 1                            # Connectivity criteria, may be 1 or 2
-    criterion = 3/7                         # Criterion used for connections -> 1 - (3/7)
+    #criteria = 1                            # Connectivity criteria, may be 1 or 2
+    #criterion = 3/7                         # Criterion used for connections -> 1 - (3/7)
 
     aboutCrit = ''
     if criteria == 2:
@@ -72,7 +74,7 @@ def main():
     nodesPCC_WOZ            = connectedComponents.nodesPerCC_WOZ(ccomponents)
     edgesPN                 = connectedComponents.edgesPerNode(binMatrix)
     centrality              = paths.brandeAlgorithm(adjList)
-    localClustering         = clustering.localClusteringCoef(range(1, nCells), adjList, binMatrix)
+    localClustering         = clustering.localClusteringCoef(range(0, nCells), adjList, binMatrix)
     globalClustering        = clustering.globalClusteringCoef(localClustering)
     transitivity            = clustering.transitivityCoef(range(1, nCells), adjList, binMatrix)
 
@@ -85,6 +87,7 @@ def main():
         ccTransitivity[i]   = clustering.transitivityCoef(ccomponents[i+1], adjList, binMatrix)
 
     print('\n#### ' + animal + ' - ' + slice + ' ####')
+    print(animal, slice, section, fixedRadius, criteria, criterion)
     print('Total number of nodes analyzed: {}'.format(nCells-1))
     print("Total number of components: {}".format(len(ccomponents)-1))
     print('Isolated nodes: {}'.format(len(ccomponents[0]))) # ccomponents[0] contains the isolated nodes
@@ -109,7 +112,7 @@ def main():
         folderCrit = 'Criteria 1/'
     else:
         folderCrit = 'Criteria 2/{:.4f}/'.format(criterion)
-    dataFolder = 'savedData/' + animal + '/' + slice + '/' + section + '/'
+    dataFolder = 'savedData/' + animal + '/' + folderCrit + slice + '/' + section + '/'
 
     with open(dataFolder + animal + ' - GT.csv', mode='a') as csv_file:
         fieldnames = ['animal', 'slice', 'section', 'number of nodes', 'Fixed radius', 'criteria', 'criterion', 'connected components', 'isolated cells', 'global clustering coeff', 'transitivity']
@@ -161,7 +164,10 @@ def main():
     #networkPlots.drawEdges(binMatrix, cells, axNetwork)
 
     figNodes, axNodes = plt.subplots(1, 3)
-    axNodes[0].hist(edgesPN, bins = int(np.amax(edgesPN)))
+    binsND = int(np.amax(edgesPN))
+    if binsND <= 0:
+        binsND = 10
+    axNodes[0].hist(edgesPN, bins = binsND)
     axNodes[1].hist(centrality, bins=12)
     axNodes[2].hist(localClustering, bins=12)
 
@@ -249,7 +255,7 @@ def main():
     figCCName = animal + '-' + slice + '-' + section + ' - Hist per cc.png'
     figCC.savefig(dataFolder + figCCName, format='png')
 
-    plt.show()
+    #plt.show()
 
     print('\n')
 
