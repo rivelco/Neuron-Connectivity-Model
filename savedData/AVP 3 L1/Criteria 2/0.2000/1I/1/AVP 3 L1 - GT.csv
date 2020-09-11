@@ -1,0 +1,4 @@
+animal,slice,section,number of nodes,Fixed radius,criteria,criterion,connected components,isolated cells,global clustering coeff,transitivity
+AVP 3 L1,1I,1,88,True,2,0.2,15,22,0.25385232744783304,0.6778242677824268
+animal,slice,section,number of nodes,Fixed radius,criteria,criterion,connected components,isolated cells,global clustering coeff,transitivity
+AVP 3 L1,1I,1,88,False,2,0.2,16,13,0.3356072766185126,0.7207792207792207

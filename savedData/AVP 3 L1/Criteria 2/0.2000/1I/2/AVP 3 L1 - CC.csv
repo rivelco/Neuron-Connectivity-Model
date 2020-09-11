@@ -1,0 +1,12 @@
+comp,bumber of nodes,global clustering coefficient,transitivity
+1,2,0.0,0.0
+2,116,0.582703886152162,0.5643322475570033
+3,3,1.0,1.0
+4,2,0.0,0.0
+5,2,0.0,0.0
+6,4,0.0,0.0
+comp,bumber of nodes,global clustering coefficient,transitivity
+1,122,0.6172131147540983,0.582723279648609
+2,3,1.0,1.0
+3,2,0.0,0.0
+4,2,0.0,0.0
