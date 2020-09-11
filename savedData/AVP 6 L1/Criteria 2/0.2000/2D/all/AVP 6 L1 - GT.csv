@@ -1,0 +1,2 @@
+animal,slice,section,number of nodes,Fixed radius,criteria,criterion,connected components,isolated cells,global clustering coeff,transitivity
+AVP 6 L1,2D,all,224,True,2,0.2,53,61,0.14222222222222222,0.4636363636363636
