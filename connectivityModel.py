@@ -255,6 +255,8 @@ def main(animal, slice, section, fixedRadius, criteria, criterion):
     figCCName = animal + '-' + slice + '-' + section + ' - Hist per cc.png'
     figCC.savefig(dataFolder + figCCName, format='png')
 
+    plt.close('all')
+
     #plt.show()
 
     print('\n')
