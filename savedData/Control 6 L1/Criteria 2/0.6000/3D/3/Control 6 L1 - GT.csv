@@ -1,0 +1,2 @@
+animal,slice,section,number of nodes,Fixed radius,criteria,criterion,connected components,isolated cells,global clustering coeff,transitivity
+Control 6 L1,3D,3,256,True,2,0.6,35,173,0.06031128404669261,0.75
