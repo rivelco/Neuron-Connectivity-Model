@@ -160,7 +160,7 @@ def main():
     ax[1][1].set_ylabel('Transitivity')
     ax[1][1].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
 
-    figName = "Slice: " + sliceNum[0] + "  -  Section: " + sections[0] + ' - GT.png'
+    figName = "Slice " + sliceNum[0] + "  -  Section " + sections[0] + ' - GT.png'
     dataFolder = "savedData/Results/Generals/"
     #fig.savefig(dataFolder + figName, format='png')
 
