@@ -24,14 +24,14 @@ def makeGrpahics(ax, control, avp):
 
     stat, p = stats.shapiro(dataControl)
     if p > 0.05:
-        print('Control looks Gaussian (fail to reject H0)')
+        pass#print('Control looks Gaussian (fail to reject H0)')
     else:
-    	print('Control does not look Gaussian (reject H0)')
+    	pass#print('Control does not look Gaussian (reject H0)')
     stat, p = stats.shapiro(dataAVP)
     if p > 0.05:
-        print('AVP looks Gaussian (fail to reject H0)')
+        pass#print('AVP looks Gaussian (fail to reject H0)')
     else:
-    	print('AVP does not look Gaussian (reject H0)')
+    	pass#print('AVP does not look Gaussian (reject H0)')
 
     diffs = []
     for prob in criterions:
@@ -40,13 +40,11 @@ def makeGrpahics(ax, control, avp):
         stat, p = stats.ttest_ind(samp1, samp2)
         diffs.append(p)
 
-    #ax.scatter(probs, dataControl, marker='o', c='#0000FF', alpha=1, edgecolor='none', label='Control')
-    #ax.scatter(probs, dataAVP, marker='o', c='#FF0000', alpha=1, edgecolor='none', label='AVP')
     ax.errorbar(probs, dataControl, yerr=semsControl, marker='o', c='#0000FF', alpha=1, label='Control')
     ax.errorbar(probs, dataAVP, yerr=semsAVP, marker='o', c='#FF0000', alpha=1, label='AVP')
+    for i, tag in enumerate(range(len(dataControl))):
+        ax.annotate("{:.4f}".format(diffs[i]), (probs[i], dataControl[i]))
     ax.legend()
-
-    print(diffs)
 
 def darkGraph():
     plt.rcParams.update({                   # Plot style configuration
@@ -64,14 +62,7 @@ def darkGraph():
         "savefig.facecolor": "black",
         "savefig.edgecolor": "black"})
 
-def main():
-    animals     = ["AVP 6 L1", "Control 6 L1", "AVP 3 L1", "Control 07J L1"]
-    sliceNum    = ["4"]#["1", "2", "3", "4"]
-    sliceSide   = ["I", "D"]
-    sections    = ["3"]#["1", "2", "3", "all"]
-    fixedRadius = [True]#[True, False]
-    criterias   = ["2"]#["1", "2"]
-    criterions  = ["0.2000", "0.4285", "0.6000", "0.8000", "0.9000"]
+def generateGraph(animals, sliceNum, sliceSide, sections, fixedRadius, criterias, criterions):
 
     ccC = {}
     isC = {}
@@ -132,7 +123,17 @@ def main():
     makeGrpahics(ax[1][0], gcC, gcA)
     makeGrpahics(ax[1][1], trC, trA)
 
-    description = "\nSlice: " + sliceNum[0] + "  -  Section: " + sections[0]
+    secName = ''
+    if sections[0] == "1":
+        secName = "DM"
+    elif sections[0] == "2":
+        secName = "V"
+    elif sections[0] == "3":
+        secName = "DL"
+    elif sections[0] == "all":
+        secName = "all"
+
+    description = "\nSlice: " + sliceNum[0] + "  -  Section: " + secName
     fig.set_size_inches((10, 10))
     fig.suptitle('Graphs stats' + description, fontsize=16)
     ax[0][0].set_title('Number of connected components (cc)', fontsize=10)
@@ -141,11 +142,11 @@ def main():
     ax[0][0].set_xlabel('Probability of connection')
     ax[0][0].set_ylabel('Number of cc')
     ax[0][0].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
-    ax[0][1].set_title('Isolated nodes', fontsize=10)
+    ax[0][1].set_title('Proportion of isolated nodes', fontsize=10)
     ax[0][1].spines['top'].set_visible(False)
     ax[0][1].spines['right'].set_visible(False)
     ax[0][1].set_xlabel('Probability')
-    ax[0][1].set_ylabel('Isolated nodes')
+    ax[0][1].set_ylabel('Proportion')
     ax[0][1].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
     ax[1][0].set_title('Global clustering coefficient', fontsize=10)
     ax[1][0].spines['top'].set_visible(False)
@@ -160,11 +161,26 @@ def main():
     ax[1][1].set_ylabel('Transitivity')
     ax[1][1].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
 
-    figName = "Slice " + sliceNum[0] + "  -  Section " + sections[0] + ' - GT.png'
+    figName = "Slice " + sliceNum[0] + "  -  Section " + secName + ' - GT.png'
     dataFolder = "savedData/Results/Generals/"
-    #fig.savefig(dataFolder + figName, format='png')
+    fig.savefig(dataFolder + figName, format='png')
+    #plt.show()
+    plt.close('all')
 
-    plt.show()
+def main():
+    animals     = ["AVP 6 L1", "Control 6 L1", "AVP 3 L1", "Control 07J L1"]
+    sliceNum    = ["1", "2", "3", "4"]
+    sliceSide   = ["I", "D"]
+    sections    = ["1", "2", "3", "all"]
+    fixedRadius = [True]#[True, False]
+    criterias   = ["2"]#["1", "2"]
+    criterions  = ["0.2000", "0.4285", "0.6000", "0.8000", "0.9000"]
+
+    for sliceN in sliceNum:
+        for section in sections:
+            if int(sliceN) > 2 and section == "2":
+                continue
+            generateGraph(animals, [sliceN], sliceSide, [section], fixedRadius, criterias, criterions)
 
 if __name__ == "__main__":
     main()
