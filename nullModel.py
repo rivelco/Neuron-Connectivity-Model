@@ -38,7 +38,7 @@ def generateCells(total, randRad, rx, ry):
     return nullCells                        # Return the cells
 
 def rMin(area, rMaxC):
-    return area/(math.pi*rMaxC)
+    return area*1000000/(math.pi*rMaxC)
 
 def rMax(area, rMinC):
-    return area/(math.pi*rMinC)
+    return area*1000000/(math.pi*rMinC)
