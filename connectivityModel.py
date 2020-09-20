@@ -18,7 +18,7 @@ import clustering
 import nullModel
 import cellsDistribution
 
-def main(animal, slice, section, fixedRadius, criteria, criterion):
+def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling, noc, nullArea):
     # animal = sys.argv[1]
     # slice = sys.argv[2]
     # section = sys.argv[3]
@@ -31,8 +31,8 @@ def main(animal, slice, section, fixedRadius, criteria, criterion):
     fConnectComps = []
     fNodesInfo = []
 
-    nullModeling = False
-    noc = 350
+    #nullModeling = False
+    #noc = 350
 
     #animal = 'Control 6 L1'                 # Animal
     #slice = '1D'                            # Slice and side, number may be 1-4, side may be D or I
@@ -55,8 +55,10 @@ def main(animal, slice, section, fixedRadius, criteria, criterion):
         aboutRad = 'Radius size fixed at 125um' #127.47548783981962
 
     if nullModeling:
-        cells = nullModel.generateCells(noc, True, 4000, 5000)
-        animal = 'Null model - {} cells'.format(noc)
+        nullrMin = 1250
+        nullrMax = int(nullModel.rMax(nullArea, nullrMin))
+        cells = nullModel.generateCells(noc, True, 2*nullrMin, 2*nullrMax)
+        #animal = 'Null model - {} cells'.format(noc)
     else:
         cells = getData.extractCells(fileLocation, section)
 
@@ -259,8 +261,6 @@ def main(animal, slice, section, fixedRadius, criteria, criterion):
 
     #plt.show()
 
-    print('\n')
-
 
 if __name__ == "__main__":
-    main()
+    main("Null AVP 1", "1D", "all", True, 1, 0.2000, True, 302, 14.0756)
