@@ -5,7 +5,7 @@ import statistics as st
 import scipy.stats as stats
 import numpy as np
 
-def makeGrpahics(ax, control, avp):
+def makeGrpahics(ax, control, avp, labels, mark):
     criterions  = ["0.2000", "0.4285", "0.6000", "0.8000", "0.9000"]
     probs = [0.2000, 0.4285, 0.6000, 0.8000, 0.9000]
     listControl = []
@@ -40,8 +40,8 @@ def makeGrpahics(ax, control, avp):
         stat, p = stats.ttest_ind(samp1, samp2)
         diffs.append(p)
 
-    ax.errorbar(probs, dataControl, yerr=semsControl, marker='o', c='#0000FF', alpha=1, label='Control')
-    ax.errorbar(probs, dataAVP, yerr=semsAVP, marker='o', c='#FF0000', alpha=1, label='AVP')
+    ax.errorbar(probs, dataControl, yerr=semsControl, marker=mark, c='#0000FF', alpha=1, label=labels[0])
+    ax.errorbar(probs, dataAVP, yerr=semsAVP, marker=mark, c='#FF0000', alpha=1, label=labels[1])
     for i, tag in enumerate(range(len(dataControl))):
         ax.annotate("{:.4f}".format(diffs[i]), (probs[i], dataControl[i]))
     ax.legend()
@@ -73,6 +73,15 @@ def generateGraph(animals, sliceNum, sliceSide, sections, fixedRadius, criterias
     gcA = {}
     trA = {}
 
+    NullccC = {}
+    NullisC = {}
+    NullgcC = {}
+    NulltrC = {}
+    NullccA = {}
+    NullisA = {}
+    NullgcA = {}
+    NulltrA = {}
+
     for criterion in criterions:
         ccRecC = []
         isRecC = []
@@ -82,6 +91,15 @@ def generateGraph(animals, sliceNum, sliceSide, sections, fixedRadius, criterias
         isRecA = []
         gcRecA = []
         trRecA = []
+
+        NullccRecC = []
+        NullisRecC = []
+        NullgcRecC = []
+        NulltrRecC = []
+        NullccRecA = []
+        NullisRecA = []
+        NullgcRecA = []
+        NulltrRecA = []
         for sliceN in sliceNum:
             for sliceS in sliceSide:
                 for section in sections:
@@ -106,6 +124,18 @@ def generateGraph(animals, sliceNum, sliceSide, sections, fixedRadius, criterias
                                             isRecA.append(int(row["isolated cells"])/int(row["number of nodes"]))
                                             gcRecA.append(float(row["global clustering coeff"]))
                                             trRecA.append(float(row["transitivity"]))
+                                        elif an[0] == "Null":
+                                            if an[1] == "CTRL":
+                                                NullccRecC.append(int(row["connected components"]))
+                                                NullisRecC.append(int(row["isolated cells"])/int(row["number of nodes"]))
+                                                NullgcRecC.append(float(row["global clustering coeff"]))
+                                                NulltrRecC.append(float(row["transitivity"]))
+                                            elif an[1] == "AVP":
+                                                NullccRecA.append(int(row["connected components"]))
+                                                NullisRecA.append(int(row["isolated cells"])/int(row["number of nodes"]))
+                                                NullgcRecA.append(float(row["global clustering coeff"]))
+                                                NulltrRecA.append(float(row["transitivity"]))
+                                        break # Prevents failure when there is more rows on a file
         ccC[criterion] = ccRecC
         isC[criterion] = isRecC
         gcC[criterion] = gcRecC
@@ -115,13 +145,27 @@ def generateGraph(animals, sliceNum, sliceSide, sections, fixedRadius, criterias
         gcA[criterion] = gcRecA
         trA[criterion] = trRecA
 
+        NullccC[criterion] = NullccRecC
+        NullisC[criterion] = NullisRecC
+        NullgcC[criterion] = NullgcRecC
+        NulltrC[criterion] = NulltrRecC
+        NullccA[criterion] = NullccRecA
+        NullisA[criterion] = NullisRecA
+        NullgcA[criterion] = NullgcRecA
+        NulltrA[criterion] = NulltrRecA
+
     darkGraph()
 
     fig, ax = plt.subplots(2,2)
-    makeGrpahics(ax[0][0], ccC, ccA)
-    makeGrpahics(ax[0][1], isC, isA)
-    makeGrpahics(ax[1][0], gcC, gcA)
-    makeGrpahics(ax[1][1], trC, trA)
+    makeGrpahics(ax[0][0], ccC, ccA, ["Control", "AVP"], 'o')
+    makeGrpahics(ax[0][1], isC, isA, ["Control", "AVP"], 'o')
+    makeGrpahics(ax[1][0], gcC, gcA, ["Control", "AVP"], 'o')
+    makeGrpahics(ax[1][1], trC, trA, ["Control", "AVP"], 'o')
+
+    makeGrpahics(ax[0][0], NullccC, NullccA, ["NullC", "NullA"], '^')
+    makeGrpahics(ax[0][1], NullisC, NullisA, ["NullC", "NullA"], '^')
+    makeGrpahics(ax[1][0], NullgcC, NullgcA, ["NullC", "NullA"], '^')
+    makeGrpahics(ax[1][1], NulltrC, NulltrA, ["NullC", "NullA"], '^')
 
     secName = ''
     if sections[0] == "1":
@@ -161,14 +205,14 @@ def generateGraph(animals, sliceNum, sliceSide, sections, fixedRadius, criterias
     ax[1][1].set_ylabel('Transitivity')
     ax[1][1].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
 
-    figName = "Slice " + sliceNum[0] + "  -  Section " + secName + ' - GT.png'
+    figName = "Null Slice " + sliceNum[0] + "  -  Section " + secName + ' - GT.png'
     dataFolder = "savedData/Results/Generals/"
     fig.savefig(dataFolder + figName, format='png')
     #plt.show()
     plt.close('all')
 
 def main():
-    animals     = ["AVP 6 L1", "Control 6 L1", "AVP 3 L1", "Control 07J L1"]
+    animals     = ["AVP 6 L1", "Control 6 L1", "AVP 3 L1", "Control 07J L1", "Null AVP 1", "Null AVP 2", "Null AVP 3", "Null AVP 4", "Null CTRL 1", "Null CTRL 2", "Null CTRL 3", "Null CTRL 4"]
     sliceNum    = ["1", "2", "3", "4"]
     sliceSide   = ["I", "D"]
     sections    = ["1", "2", "3", "all"]
