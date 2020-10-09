@@ -40,6 +40,9 @@ def makeGrpahics(ax, control, avp, labels, mark):
         stat, p = stats.ttest_ind(samp1, samp2)
         diffs.append(p)
 
+    #print("Control: ", control['0.4285'])
+    #print("AVP: ", avp['0.4285'])
+
     ax.errorbar(probs, dataControl, yerr=semsControl, marker=mark, c='#0000FF', alpha=1, label=labels[0])
     ax.errorbar(probs, dataAVP, yerr=semsAVP, marker=mark, c='#FF0000', alpha=1, label=labels[1])
     for i, tag in enumerate(range(len(dataControl))):
