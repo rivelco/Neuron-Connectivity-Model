@@ -19,6 +19,7 @@ import nullModel
 import cellsDistribution
 
 def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling, noc, nullArea):
+    print('\n#### ' + animal + ' - ' + slice + ' ####')
     # animal = sys.argv[1]
     # slice = sys.argv[2]
     # section = sys.argv[3]
@@ -88,7 +89,6 @@ def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling,
     for i in range(0, len(ccomponents)-1):
         ccTransitivity[i]   = clustering.transitivityCoef(ccomponents[i+1], adjList, binMatrix)
 
-    print('\n#### ' + animal + ' - ' + slice + ' ####')
     print(animal, slice, section, fixedRadius, criteria, criterion)
     print('Total number of nodes analyzed: {}'.format(nCells-1))
     print("Total number of components: {}".format(len(ccomponents)-1))
@@ -263,4 +263,5 @@ def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling,
 
 
 if __name__ == "__main__":
-    main("Null AVP 1", "1D", "all", True, 1, 0.2000, True, 302, 14.0756)
+    #main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling, noc, nullArea):
+    main("Control 6 L1", "2D", "all", True, 2, 0.4285, False, 302, 14.0756)
