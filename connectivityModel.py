@@ -115,7 +115,7 @@ def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling,
     else:
         folderCrit = 'Criteria 2/{:.4f}/'.format(criterion)
     dataFolder = 'savedData/' + animal + '/' + folderCrit + slice + '/' + section + '/'
-
+    '''
     with open(dataFolder + animal + ' - GT.csv', mode='a') as csv_file:
         fieldnames = ['animal', 'slice', 'section', 'number of nodes', 'Fixed radius', 'criteria', 'criterion', 'connected components', 'isolated cells', 'global clustering coeff', 'transitivity']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -141,7 +141,7 @@ def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling,
         for cell in cells:
             i = cell.name
             writer.writerow([i, edgesPN[i], centrality[i], localClustering[i]])
-
+    '''
     # Generates the figures
     plt.rcParams.update({                   # Plot style configuration
         "lines.color": "white",
@@ -198,7 +198,7 @@ def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling,
     axNetwork.set_xlim(-500, 5000)
     axNetwork.set_ylim(-500, 6500)
     figNetworkName = animal + '-' + slice + '-' + section + '.png'
-    figNetwork.savefig(dataFolder + figNetworkName, format='png')
+    # figNetwork.savefig(dataFolder + figNetworkName, format='png')
 
     figDist.set_size_inches((7.15,9.1))
     figDist.suptitle('Density of cells', fontsize=20)
@@ -208,7 +208,7 @@ def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling,
     axDist.set_xlabel('X coordinates (um)')
     axDist.set_ylabel('Y coordinates (um)')
     figDistName = animal + '-' + slice + '-' + section + ' - Hist2d.png'
-    figDist.savefig(dataFolder + figDistName, format='png')
+    # figDist.savefig(dataFolder + figDistName, format='png')
 
     # Style and info for the histograms
     figNodes.set_size_inches((12, 5))
@@ -232,7 +232,7 @@ def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling,
     axNodes[2].set_ylabel('Amount of nodes')
     axNodes[2].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
     figNodesName = animal + '-' + slice + '-' + section + ' - Hist per nodes.png'
-    figNodes.savefig(dataFolder + figNodesName, format='png')
+    # figNodes.savefig(dataFolder + figNodesName, format='png')
 
     figCC.set_size_inches((12, 5))
     figCC.suptitle('Histograms per connected component (cc)', fontsize=16)
@@ -255,11 +255,11 @@ def main(animal, slice, section, fixedRadius, criteria, criterion, nullModeling,
     axCC[2].set_ylabel('Amount of cc')
     axCC[2].grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
     figCCName = animal + '-' + slice + '-' + section + ' - Hist per cc.png'
-    figCC.savefig(dataFolder + figCCName, format='png')
+    # figCC.savefig(dataFolder + figCCName, format='png')
 
-    plt.close('all')
+    #plt.close('all')
 
-    #plt.show()
+    plt.show()
 
 
 if __name__ == "__main__":
