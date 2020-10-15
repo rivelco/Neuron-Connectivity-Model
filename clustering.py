@@ -36,31 +36,33 @@ def globalClusteringCoef(clusteringCoefs):
 
 # Calculates the transitivity coefficient for a single node
 # Receives the node, an adjacency list and a binary adjacency matrix
-# Returns 
+# Returns the number of paths of length three and two respectively
 def singleTransitivityCoef(nodeA, adjList, matrix):
-    k = len(adjList[nodeA])
-    length3 = 0
-    length2 = 0
-    for i in range(k):
-        nodeB = adjList[nodeA][i]
-        k2 = len(adjList[nodeB])
-        for j in range(k2):
-            nodeC = adjList[nodeB][j]
-            if nodeA != nodeC and nodeB != nodeC:
-                length2 += 1
-                if matrix[nodeA][nodeC] == 1:
-                    length3 += 1
-    return length3, length2
+    k = len(adjList[nodeA])     # Number of neighbours of A
+    length3 = 0                 # Initialize paths of length 3
+    length2 = 0                 # Initialize paths of length 2
+    for i in range(k):          # Iterates over the neighbours of A
+        nodeB = adjList[nodeA][i]   # Get the first neighbour of A
+        k2 = len(adjList[nodeB])    # Number of neighbours of B
+        for j in range(k2):         # Iterates over each neighbour of B
+            nodeC = adjList[nodeB][j]   # First neighbour of B
+            if nodeA != nodeC and nodeB != nodeC and nodeA != nodeB:    # If all are different nodes
+                length2 += 1    # Then we can form a path of 2
+                if matrix[nodeA][nodeC] == 1:   # If A and C are also connected
+                    length3 += 1    # Then we have a path of length three
+    return length3, length2     # Return the counts
 
+# Calculates the global coefficient of transitivity of a network
+# Receives a list of cells (may be a range(1, n)), an adjacency list and a binary adjacency matrix
+# Returns the transitivity coefficient, paths of length 3 over paths of length 2
 def transitivityCoef(cells, adjList, matrix):
-    length3 = 0
-    length2 = 0
-    for cell in cells:
-        l3, l2 = singleTransitivityCoef(cell, adjList, matrix)
-        length2 += l2
-        length3 += l3
-
-    if length2 == 0:
-        return 0
-    coef = length3 / length2
-    return coef
+    length3 = 0         # Initialize the number of paths of length three
+    length2 = 0         # Initialize the number of paths of length two
+    for cell in cells:      # Iterates over each cell
+        l3, l2 = singleTransitivityCoef(cell, adjList, matrix)  # Calculates the paths
+        length2 += l2           # Adds the paths of length two to the accumulator
+        length3 += l3           # Adds the paths of length three to the accumulator
+    if length2 == 0:    # If there's not a single path of length two
+        return 0            # Returns 0
+    coef = length3 / length2    # Calculates the coefficient
+    return coef         # Returns the coefficient
