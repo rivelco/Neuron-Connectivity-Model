@@ -1,4 +1,10 @@
-
 .DS_Store
+desktop.ini
+Rubbish/
 
 __pycache__/
+
+savedData/
+Data/
+Figures/
+oldSavedData/
