@@ -144,18 +144,18 @@ adjList = binMatrixtoAdjList(matrix)
 
 Main function, performs the topological  analysis and generates the reports for every analysis. Receives a python dictionary with the following keys and example values:
 
-**animal**        : "Control 6 L1"    - Name of the animal to look for or to generate (if null animal)\n
-**slice**         : "2D"              - Number (1-4) and side (I, D) of the slide
-**section**       : "all"             - Name of the section, either '1', '2', '3' or 'all'
-**fixedRadius**   : True              - Boolean value to evaluate fixed or random radius values
-**criteria**      : 2                 - Criteria to evaluate, either 1 or 2
-**criterion**     : 0.4285            - Criterion or probability to consider, always float
-**nullModeling**  : False             - Boolean value, True if generating a null model
-**noc**           : 302               - Number of cells to consider when null-modeling
-**nullArea**      : 14.0756           - Area of the nuclei when null-modeling
-**saveCSV**       : True              - Boolean value, True if want to save the CSV report files
-**saveFigs**      : True              - Boolean value, True if want to save the figs, PNG files
-**showFigs**      : False             - Boolean value, True if want to display the figs  
+**animal**        : "Control 6 L1"    - Name of the animal to look for or to generate (if null animal) <br />
+**slice**         : "2D"              - Number (1-4) and side (I, D) of the slide <br />
+**section**       : "all"             - Name of the section, either '1', '2', '3' or 'all' <br />
+**fixedRadius**   : True              - Boolean value to evaluate fixed or random radius values <br />
+**criteria**      : 2                 - Criteria to evaluate, either 1 or 2 <br />
+**criterion**     : 0.4285            - Criterion or probability to consider, always float <br />
+**nullModeling**  : False             - Boolean value, True if generating a null model <br />
+**noc**           : 302               - Number of cells to consider when null-modeling <br />
+**nullArea**      : 14.0756           - Area of the nuclei when null-modeling <br />
+**saveCSV**       : True              - Boolean value, True if want to save the CSV report files <br />
+**saveFigs**      : True              - Boolean value, True if want to save the figs, PNG files <br />
+**showFigs**      : False             - Boolean value, True if want to display the figs <br />
 
 When saving reports, the function creates a folder tree like this:
 
